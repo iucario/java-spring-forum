@@ -15,4 +15,6 @@ public interface UserService {
     void saveUser(User user);
 
     void deleteUserById(Long id);
+
+    Boolean authenticate(String name, String password);
 }

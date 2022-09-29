@@ -1,5 +1,6 @@
 package com.demo.app.service;
 
+import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.demo.app.repository.User;
 import com.demo.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByName(String name) {
-        return userRepository.getByName(name);
+        User user = null;
+        user = userRepository.getByName(name);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return user;
     }
 
     @Override
@@ -43,5 +49,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUserById(Long id) {
         this.userRepository.deleteById(id);
+    }
+
+    @Override
+    public Boolean authenticate(String name, String password) {
+        try {
+            User user = userRepository.getByName(name);
+            char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, password.toCharArray());
+            String hashedPassword = new String(bcryptChars);
+            BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
+            return result.verified;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

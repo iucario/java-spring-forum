@@ -4,21 +4,16 @@ import com.demo.app.repository.Item;
 import com.demo.app.repository.User;
 import com.demo.app.service.ItemService;
 import com.demo.app.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootApplication
 @RestController
@@ -28,15 +23,22 @@ public class DemoApplication {
     @Autowired
     private ItemService itemService;
 
+    @SuppressWarnings("rawtypes")
+    @Bean
+    public FilterRegistrationBean jwtFilter() {
+        final FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        registrationBean.setFilter(new JwtFilter());
+        registrationBean.addUrlPatterns("/api/*");
+
+        return registrationBean;
+    }
+
+
     @GetMapping(value = "/")
     public String index() {
         return "Hello";
     }
 
-    @GetMapping("/users")
-    public List<User> getAllUsers() throws Exception {
-        return userService.getAll();
-    }
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public String addNewUser(@RequestBody User.UserCreate user) throws Exception {
