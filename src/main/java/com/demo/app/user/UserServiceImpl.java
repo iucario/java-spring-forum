@@ -1,8 +1,6 @@
-package com.demo.app.service;
+package com.demo.app.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.demo.app.repository.User;
-import com.demo.app.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +12,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
+    private static String hashPassword(String password) {
+        char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(12, password.toCharArray());
+        return new String(bcryptChars);
+    }
+
     @Override
     public List<User> getAll() {
         return (List<User>) userRepository.findAll();
@@ -21,12 +24,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByName(String name) {
-        User user = null;
-        user = userRepository.getByName(name);
-        if (user == null) {
-            throw new RuntimeException("User not found");
-        }
-        return user;
+        Optional<User> user = Optional.ofNullable(userRepository.getByName(name));
+        return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
@@ -42,7 +41,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void saveUser(User user) {
+    public void saveUser(String name, String password) {
+        String hashedPassword = hashPassword(password);
+        User user = new User(name, hashedPassword);
         this.userRepository.save(user);
     }
 
@@ -55,9 +56,8 @@ public class UserServiceImpl implements UserService {
     public Boolean authenticate(String name, String password) {
         try {
             User user = userRepository.getByName(name);
-            char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(6, password.toCharArray());
-            String hashedPassword = new String(bcryptChars);
-            BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
+            String hashedPassword = hashPassword(password);
+            BCrypt.Result result = BCrypt.verifyer().verify(hashedPassword.toCharArray(), user.getHashedPassword());
             return result.verified;
         } catch (Exception e) {
             return false;

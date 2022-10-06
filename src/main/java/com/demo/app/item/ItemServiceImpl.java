@@ -1,7 +1,5 @@
-package com.demo.app.service;
+package com.demo.app.item;
 
-import com.demo.app.repository.Item;
-import com.demo.app.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

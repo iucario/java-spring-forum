@@ -1,7 +1,5 @@
-package com.demo.app;
+package com.demo.app.auth;
 
-
-import com.demo.app.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.web.filter.GenericFilterBean;
 
@@ -16,6 +14,10 @@ public class JwtFilter extends GenericFilterBean {
 
     private final JwtUtil jwtUtil = new JwtUtil();
 
+    /**
+     * Filter to check if the request has a valid JWT token
+     * Convert token to "claims" field in the request
+     */
     @Override
     public void doFilter(final ServletRequest req,
                          final ServletResponse res,

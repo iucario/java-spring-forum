@@ -1,4 +1,4 @@
-package com.demo.app.util;
+package com.demo.app.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -17,10 +17,10 @@ import java.util.function.Function;
 @Component
 public class JwtUtil implements Serializable {
 
-    public static final long JWT_TOKEN_VALIDITY = 7 * 24 * 60 * 60;
+    public static final long EXPIRATION = 7 * 24 * 60 * 60;
 
     @Value("${jwt.secret}")
-    private String secret; // fixme: application.properties not working
+    private String secret = "jwtsecret"; // fixme: application.properties not working
 
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
@@ -48,7 +48,7 @@ public class JwtUtil implements Serializable {
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         final Key key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        Date exp = new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000);
+        Date exp = new Date(System.currentTimeMillis() + EXPIRATION * 1000);
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(new Date())
                 .setExpiration(exp).signWith(key).compact();
     }

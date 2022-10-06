@@ -1,9 +1,6 @@
-package com.demo.app.service;
-
-import com.demo.app.repository.User;
+package com.demo.app.user;
 
 import java.util.List;
-
 
 public interface UserService {
     List<User> getAll();
@@ -12,7 +9,7 @@ public interface UserService {
 
     User getById(Long id);
 
-    void saveUser(User user);
+    void saveUser(String name, String password);
 
     void deleteUserById(Long id);
 

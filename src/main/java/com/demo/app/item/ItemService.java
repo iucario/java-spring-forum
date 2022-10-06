@@ -1,6 +1,4 @@
-package com.demo.app.service;
-
-import com.demo.app.repository.Item;
+package com.demo.app.item;
 
 import java.util.List;
 

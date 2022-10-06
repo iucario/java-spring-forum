@@ -1,4 +1,4 @@
-package com.demo.app.config;
+package com.demo.app.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;

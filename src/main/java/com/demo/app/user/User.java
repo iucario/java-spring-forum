@@ -1,15 +1,11 @@
-package com.demo.app.repository;
+package com.demo.app.user;
 
+import com.demo.app.item.Image;
+import com.demo.app.item.Item;
+
+import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -19,6 +15,7 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
+    @Column(name = "hashed_password")
     private String hashedPassword;
     @Column(name = "created_time", columnDefinition = "BIGINT")
     private Long createdAt;
@@ -29,7 +26,6 @@ public class User {
     @OneToMany(mappedBy = "user")
     private Set<Image> images;
 
-
     public User() {
     }
 
@@ -39,19 +35,10 @@ public class User {
         this.createdAt = new Date().getTime();
     }
 
-    public static class UserCreate {
-        public String name;
-        public String password;
-
-        public UserCreate(String name, String password) {
-            this.name = name;
-            this.password = password;
-        }
-    }
-
     @Override
     public String toString() {
-        return String.format("User[id=%d, name='%s', created_time='%d']", id, name, createdAt);
+        return String.format("User[id=%d, name=%s, hashed_password=%s created_time=%d]", id, name,
+                hashedPassword, createdAt);
     }
 
     public Long getId() {
