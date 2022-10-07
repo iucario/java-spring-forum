@@ -9,6 +9,10 @@ import java.util.List;
 
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    @Query("SELECT i FROM Item i WHERE i.user.id = :userId ORDER BY createdAt DESC")
-    List<Item> getAll(@Param("userId") Long userId);
+    @Query(value = "SELECT * FROM items i WHERE i.user_id = :userId ORDER BY created_time DESC OFFSET :offset LIMIT " +
+            ":limit", nativeQuery = true)
+    List<Item> getAll(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
+    @Query("SELECT COUNT(*) FROM Item i WHERE i.user.id = :userId")
+    int countAll(@Param("userId") Long userId);
 }

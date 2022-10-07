@@ -3,7 +3,7 @@ package com.demo.app.item;
 import java.util.List;
 
 public interface ItemService {
-    List<Item> getAll(Long userId);
+    List<Item> getAll(Long userId, int offset);
 
     Item getById(Long id);
 

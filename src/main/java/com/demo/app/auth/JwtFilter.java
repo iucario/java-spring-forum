@@ -11,8 +11,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public class JwtFilter extends GenericFilterBean {
+    private JwtUtil jwtUtil;
 
-    private final JwtUtil jwtUtil = new JwtUtil();
+    public JwtFilter(final String secret) {
+        this.jwtUtil = new JwtUtil(secret);
+    }
 
     /**
      * Filter to check if the request has a valid JWT token
