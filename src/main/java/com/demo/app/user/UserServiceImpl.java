@@ -1,6 +1,7 @@
 package com.demo.app.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.demo.app.item.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,8 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ItemRepository itemRepository;
 
     private static String hashPassword(String password) {
         char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(12, password.toCharArray());
@@ -42,6 +45,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void saveUser(String name, String password) {
+        if (userRepository.getByName(name) != null) {
+            throw new RuntimeException("User already exists");
+        }
         String hashedPassword = hashPassword(password);
         User user = new User(name, hashedPassword);
         this.userRepository.save(user);
@@ -56,11 +62,15 @@ public class UserServiceImpl implements UserService {
     public Boolean authenticate(String name, String password) {
         try {
             User user = userRepository.getByName(name);
-            String hashedPassword = hashPassword(password);
-            BCrypt.Result result = BCrypt.verifyer().verify(hashedPassword.toCharArray(), user.getHashedPassword());
+            BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
             return result.verified;
         } catch (Exception e) {
             return false;
         }
+    }
+
+    @Override
+    public int countItems(Long id) {
+        return itemRepository.countAll(id);
     }
 }

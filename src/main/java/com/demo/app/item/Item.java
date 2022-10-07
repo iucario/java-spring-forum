@@ -63,7 +63,7 @@ public class Item {
     }
 
     public Set<Image> getImages() {
-        return images;
+        return images != null ? images : Set.of();
     }
 
     public void setImages(Set<Image> images) {
@@ -86,29 +86,4 @@ public class Item {
         return updatedAt;
     }
 
-    public static class ItemCreate {
-        public String text;
-        public String[] images;
-        public Long user_id;
-
-        public ItemCreate(String text, String[] images, Long user_id) {
-            this.text = text;
-            this.images = images;
-            this.user_id = user_id;
-        }
-
-    }
-
-    public static class ItemUpdate {
-        public String text;
-        public Long item_id;
-        public Long user_id;
-
-        public ItemUpdate(String text, Long item_id, Long user_id) {
-            this.text = text;
-            this.user_id = user_id;
-            this.item_id = item_id;
-        }
-
-    }
 }

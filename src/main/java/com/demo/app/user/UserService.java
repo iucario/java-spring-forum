@@ -14,4 +14,6 @@ public interface UserService {
     void deleteUserById(Long id);
 
     Boolean authenticate(String name, String password);
+
+    int countItems(Long id);
 }
