@@ -1,6 +1,5 @@
 package com.demo.app.user;
 
-import com.demo.app.item.Image;
 import com.demo.app.item.Item;
 
 import javax.persistence.*;
@@ -22,9 +21,6 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private Set<Item> items;
-
-    @OneToMany(mappedBy = "user")
-    private Set<Image> images;
 
     public User() {
     }

@@ -6,7 +6,8 @@ import java.util.List;
 
 public class ItemDto {
     public Long id;
-    public String text;
+    public String title;
+    public String body;
     public Long createdAt;
     public Long updatedAt;
     public List<String> images;
@@ -14,7 +15,8 @@ public class ItemDto {
 
     public ItemDto(Item item) {
         this.id = item.getId();
-        this.text = item.getText();
+        this.title = item.getTitle();
+        this.body = item.getText();
         this.createdAt = item.getCreatedAt();
         this.updatedAt = item.getUpdatedAt();
         this.images = List.of();
@@ -23,22 +25,23 @@ public class ItemDto {
 
     @Override
     public String toString() {
-        return String.format("ItemDto[id=%d, text='%s', images='%s', created_time='%d', updated_time='%d']", id,
-                text, images, createdAt, updatedAt);
+        return String.format("ItemDto[id=%d, title='%s' body=%s created_time='%d', updated_time='%d']", id,
+                title, body, createdAt, updatedAt);
     }
 
     public static class ItemCreate {
-        public String text;
+        public String title;
+        public String body;
         public String[] images;
 
-        public ItemCreate(String text, String[] images) {
-            this.text = text;
+        public ItemCreate(String body, String[] images) {
+            this.body = body;
             this.images = images;
         }
 
         @Override
         public String toString() {
-            return "ItemCreate[text=" + text + ", images=" + images + "]";
+            return "ItemCreate[title=" + title + ", body=" + body + "]";
         }
     }
 
@@ -46,16 +49,16 @@ public class ItemDto {
         @NonNull
         public Long id;
         @NonNull
-        public String text;
+        public String body;
 
-        public ItemUpdate(String text, Long id) {
-            this.text = text;
+        public ItemUpdate(@NonNull String body, @NonNull Long id) {
+            this.body = body;
             this.id = id;
         }
 
         @Override
         public String toString() {
-            return "ItemUpdate[text=" + text + ", id=" + id + "]";
+            return "ItemUpdate[body=" + body + ", id=" + id + "]";
         }
     }
 
@@ -65,7 +68,7 @@ public class ItemDto {
         // fixme: com.fasterxml.jackson.databind.exc.MismatchedInputException: Cannot construct instance of
         //  (although at least one Creator exists): cannot deserialize from Object value
 
-        public ItemDelete(Long id) {
+        public ItemDelete(@NonNull Long id) {
             this.id = id;
         }
 

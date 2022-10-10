@@ -12,7 +12,9 @@ public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String text;
+    private String title;
+    @Column(name = "text")
+    private String body;
     @Column(name = "created_time", columnDefinition = "BIGINT")
     private Long createdAt;
     @Column(name = "updated_time", columnDefinition = "BIGINT")
@@ -25,25 +27,19 @@ public class Item {
     protected Item() {
     }
 
-    public Item(String text) {
-        this.text = text;
+    public Item(String title, String body, User user) {
+        this.title = title;
+        this.body = body;
+        this.user = user;
         final long timestamp = new Date().getTime();
         this.createdAt = timestamp;
         this.updatedAt = timestamp;
     }
 
-    public Item(String text, String[] images, User user) {
-        this.text = text;
-        final var timestamp = new Date().getTime();
-        this.createdAt = timestamp;
-        this.updatedAt = timestamp;
-        this.user = user;
-    }
-
     @Override
     public String toString() {
         return String.format("Item[item_id=%d, text='%s', created_time='%d', updated_time='%d']", id,
-                text, createdAt, updatedAt);
+                body, createdAt, updatedAt);
     }
 
     public Long getId() {
@@ -51,11 +47,11 @@ public class Item {
     }
 
     public String getText() {
-        return text;
+        return body;
     }
 
     public void setText(String text) {
-        this.text = text;
+        this.body = text;
     }
 
     public User getUser() {
@@ -74,4 +70,7 @@ public class Item {
         return updatedAt;
     }
 
+    public String getTitle() {
+        return title;
+    }
 }

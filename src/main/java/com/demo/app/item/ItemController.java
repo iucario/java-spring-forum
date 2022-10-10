@@ -31,20 +31,19 @@ public class ItemController {
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ItemDto addNewItem(@RequestBody ItemDto.ItemCreate itemCreate, final HttpServletRequest request) throws Exception {
         final User user = userService.getUser(request);
-        Item item = new Item(itemCreate.text, itemCreate.images, user);
+        Item item = new Item(itemCreate.title, itemCreate.body, user);
         itemService.addItem(item);
-        ItemDto itemDto = new ItemDto(item);
-        return itemDto;
+        return new ItemDto(item);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
     public ItemDto updateItem(@RequestBody ItemDto.ItemUpdate item, final HttpServletRequest request) throws Exception {
         final User user = userService.getUser(request);
         Item i = itemService.getById(item.id);
-        if (user.getId() != i.getUser().getId()) {
+        if (!user.getId().equals(i.getUser().getId())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        i.setText(item.text);
+        i.setText(item.body);
         itemService.updateItem(i);
         return new ItemDto(i);
     }
@@ -53,7 +52,7 @@ public class ItemController {
     public String deleteItem(@PathVariable Long id, final HttpServletRequest request) throws Exception {
         final User user = userService.getUser(request);
         Item n = itemService.getById(id);
-        if (n.getUser().getId() != user.getId()) {
+        if (!n.getUser().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
         itemService.deleteItemById(id);

@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -36,10 +35,6 @@ public class FileService {
 
     Stream<String> loadAll(User user) {
         return fileRepository.findAllByUser(user.getId()).stream().map(FileUpload::getUrl);
-    }
-
-    Path load(String filename) {
-        return null;
     }
 
     Resource loadAsResource(String filename) throws FileNotFoundException {
