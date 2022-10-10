@@ -1,15 +1,47 @@
 package com.demo.app.item;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
+import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
-public interface ItemService {
-    List<Item> getAll(Long userId, int offset);
+@Service
+public class ItemService {
+    @Autowired
+    private ItemRepository itemRepository;
 
-    Item getById(Long id);
+    public List<Item> getAll(Long userId, int offset) {
+        return (List<Item>) itemRepository.getAll(userId, offset, 10);
+    }
 
-    Item addItem(Item item);
+    public Item getById(Long id) {
+        Optional<Item> optional = itemRepository.findById(id);
+        Item item = null;
+        if (optional.isPresent()) {
+            item = optional.get();
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found for id :: " + id);
+        }
+        return item;
+    }
 
-    void deleteItemById(Long id);
+    public Item addItem(Item item) {
+        return this.itemRepository.save(item);
+    }
 
-    void updateItem(Item item);
+    public void deleteItemById(Long id) {
+        this.itemRepository.deleteById(id);
+    }
+
+    @Transactional
+    public void updateItem(Item item) {
+        itemRepository.findById(item.getId()).ifPresent(existingItem -> {
+            existingItem.setText(item.getText());
+            existingItem.updateTime();
+        });
+    }
 }
