@@ -18,9 +18,6 @@ public class ItemDto {
         this.createdAt = item.getCreatedAt();
         this.updatedAt = item.getUpdatedAt();
         this.images = List.of();
-        if (item.getImages() != null) {
-            this.images = item.getImages().stream().map(Image::getData).toList();
-        }
         this.userId = item.getUser().getId();
     }
 

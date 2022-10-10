@@ -2,9 +2,13 @@ package com.demo.app.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.demo.app.item.ItemRepository;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,5 +68,14 @@ public class UserService {
 
     public int countItems(Long id) {
         return itemRepository.countAll(id);
+    }
+
+    public User getUser(HttpServletRequest request) {
+        final Claims claims = (Claims) request.getAttribute("claims");
+        try {
+            return getByName(claims.get("sub", String.class));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
+        }
     }
 }

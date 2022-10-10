@@ -16,6 +16,9 @@ public class FilterConfig {
         registrationBean.setFilter(new JwtFilter(secret));
         registrationBean.addUrlPatterns("/api/*");
         registrationBean.addUrlPatterns("/user/me");
+        registrationBean.addUrlPatterns("/file/upload");
+        registrationBean.addUrlPatterns("/file/delete/*");
+        registrationBean.addUrlPatterns("/file/list");
         return registrationBean;
     }
 }

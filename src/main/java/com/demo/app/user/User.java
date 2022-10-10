@@ -37,8 +37,7 @@ public class User {
 
     @Override
     public String toString() {
-        return String.format("User[id=%d, name=%s, hashed_password=%s created_time=%d]", id, name,
-                hashedPassword, createdAt);
+        return String.format("User[id=%d, name=%s, created_time=%d]", id, name, createdAt);
     }
 
     public Long getId() {

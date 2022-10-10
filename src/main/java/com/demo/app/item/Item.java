@@ -4,7 +4,6 @@ import com.demo.app.user.User;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.Set;
 
 @Entity
 @Table(name = "items")
@@ -19,9 +18,6 @@ public class Item {
     @Column(name = "updated_time", columnDefinition = "BIGINT")
     private Long updatedAt;
 
-    @OneToMany(mappedBy = "item")
-    private Set<Image> images;
-
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -31,7 +27,7 @@ public class Item {
 
     public Item(String text) {
         this.text = text;
-        final var timestamp = new Date().getTime();
+        final long timestamp = new Date().getTime();
         this.createdAt = timestamp;
         this.updatedAt = timestamp;
     }
@@ -46,8 +42,8 @@ public class Item {
 
     @Override
     public String toString() {
-        return String.format("Item[item_id=%d, text='%s', images='%s', created_time='%d', updated_time='%d']", id,
-                text, images, createdAt, updatedAt);
+        return String.format("Item[item_id=%d, text='%s', created_time='%d', updated_time='%d']", id,
+                text, createdAt, updatedAt);
     }
 
     public Long getId() {
@@ -60,14 +56,6 @@ public class Item {
 
     public void setText(String text) {
         this.text = text;
-    }
-
-    public Set<Image> getImages() {
-        return images != null ? images : Set.of();
-    }
-
-    public void setImages(Set<Image> images) {
-        this.images = images;
     }
 
     public User getUser() {
