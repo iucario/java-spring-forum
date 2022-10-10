@@ -27,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByName(String name) {
-        Optional<User> user = Optional.ofNullable(userRepository.getByName(name));
+        Optional<User> user = userRepository.getByName(name);
         return user.orElseThrow(() -> new RuntimeException("User not found"));
     }
 
@@ -60,13 +60,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Boolean authenticate(String name, String password) {
-        try {
-            User user = userRepository.getByName(name);
-            BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
-            return result.verified;
-        } catch (Exception e) {
+        User user = userRepository.getByName(name).orElse(null);
+        if (user == null) {
             return false;
         }
+        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
+        return result.verified;
     }
 
     @Override

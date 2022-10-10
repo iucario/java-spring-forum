@@ -16,6 +16,19 @@ public class UserDto {
         this.totalItems = totalItems;
     }
 
+    public static class UserLogin {
+        public String name;
+        public String password;
+    }
+
+    public static class LoginResponse {
+        public String token;
+
+        public LoginResponse(final String token) {
+            this.token = token;
+        }
+    }
+
     public static class UserCreate {
         @NonNull()
         @Pattern(regexp = "^[a-zA-Z0-9_]{3,20}$", message = "Username must be 3-20 characters long and contain only " +

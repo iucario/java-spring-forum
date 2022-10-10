@@ -20,31 +20,16 @@ public class UserController {
     private JwtUtil jwtUtil;
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public LoginResponse login(@RequestBody final UserLogin login) throws Exception {
-        System.out.printf("=> login: %s %s%n", login.name, login.password);
+    public UserDto.LoginResponse login(@RequestBody final UserDto.UserLogin login) throws Exception {
         if (!userService.authenticate(login.name, login.password)) {
-            System.out.println("=> login: failed");
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,
                     "Invalid login. Please check your username and password.");
         }
-        return new LoginResponse(jwtUtil.generateToken(login.name));
-    }
-
-    private static class UserLogin {
-        public String name;
-        public String password;
-    }
-
-    private static class LoginResponse {
-        public String token;
-
-        public LoginResponse(final String token) {
-            this.token = token;
-        }
+        return new UserDto.LoginResponse(jwtUtil.generateToken(login.name));
     }
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
-    public ResponseEntity addNewUser(@Valid @RequestBody UserDto.UserCreate user) throws Exception {
+    public ResponseEntity<String> register(@Valid @RequestBody UserDto.UserCreate user) throws Exception {
         if (userService.getByName(user.name) != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
         }
