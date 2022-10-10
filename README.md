@@ -6,6 +6,8 @@ Authentication: Filter and JWT
 
 Database: PostgreSQL
 
+![](Demo%20Diagram.png)
+
 ## Getting Started
 
 - `/user/register`
