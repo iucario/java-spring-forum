@@ -15,7 +15,7 @@ public class PostService {
     private PostRepository postRepository;
 
     public List<Post> getAll(Long userId, int offset) {
-        return (List<Post>) postRepository.getAll(userId, offset, 10);
+        return postRepository.getAll(userId, offset, 10);
     }
 
     public Post getById(Long id) {

@@ -42,7 +42,7 @@ public class CommentService {
     }
 
     public List<Comment> findByPostAndUser(Long itemId, Long userId) {
-        return commentRepository.findByItemAndUser(itemId, userId);
+        return commentRepository.findByPostAndUser(itemId, userId);
     }
 
     public Comment save(String body, Long postId, User user) {
