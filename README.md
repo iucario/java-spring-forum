@@ -44,5 +44,5 @@ Database: PostgreSQL
     ```
 
 - `/user/me` get
-- `/api/item` post, get, put, delete
+- `/api/post` post, get, put, delete
 

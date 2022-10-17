@@ -1,6 +1,6 @@
 package com.demo.app.user;
 
-import com.demo.app.item.Item;
+import com.demo.app.post.Post;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -11,16 +11,16 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String name;
     @Column(name = "hashed_password")
     private String hashedPassword;
-    @Column(name = "created_time", columnDefinition = "BIGINT")
+    @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;
 
     @OneToMany(mappedBy = "user")
-    private Set<Item> items;
+    private Set<Post> posts;
 
     public User() {
     }
@@ -33,7 +33,7 @@ public class User {
 
     @Override
     public String toString() {
-        return String.format("User[id=%d, name=%s, created_time=%d]", id, name, createdAt);
+        return String.format("User[id=%d, name=%s, created_at=%d]", id, name, createdAt);
     }
 
     public Long getId() {

@@ -1,7 +1,7 @@
 package com.demo.app.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
-import com.demo.app.item.ItemRepository;
+import com.demo.app.post.PostRepository;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,7 +17,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ItemRepository itemRepository;
+    private PostRepository postRepository;
 
     private static String hashPassword(String password) {
         char[] bcryptChars = BCrypt.with(BCrypt.Version.VERSION_2B).hashToChar(12, password.toCharArray());
@@ -28,9 +28,10 @@ public class UserService {
         return (List<User>) userRepository.findAll();
     }
 
-    public User getByName(String name) {
-        Optional<User> user = userRepository.getByName(name);
-        return user.orElseThrow(() -> new RuntimeException("User not found"));
+    public User findByName(String name) {
+        Optional<User> user = userRepository.findByName(name.toLowerCase());
+        return user.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found for name :: " + name));
     }
 
     public User getById(Long id) {
@@ -45,7 +46,7 @@ public class UserService {
     }
 
     public void saveUser(String name, String password) {
-        if (userRepository.getByName(name).isPresent()) {
+        if (userRepository.findByName(name).isPresent()) {
             throw new RuntimeException("User already exists");
         }
         String hashedPassword = hashPassword(password);
@@ -58,7 +59,7 @@ public class UserService {
     }
 
     public Boolean authenticate(String name, String password) {
-        User user = userRepository.getByName(name).orElse(null);
+        User user = userRepository.findByName(name).orElse(null);
         if (user == null) {
             return false;
         }
@@ -67,13 +68,13 @@ public class UserService {
     }
 
     public int countItems(Long id) {
-        return itemRepository.countAll(id);
+        return postRepository.countAll(id);
     }
 
     public User getUser(HttpServletRequest request) {
         final Claims claims = (Claims) request.getAttribute("claims");
         try {
-            return getByName(claims.get("sub", String.class));
+            return findByName(claims.get("sub", String.class));
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
         }

@@ -1,10 +1,10 @@
-package com.demo.app.item;
+package com.demo.app.post;
 
 import org.springframework.lang.NonNull;
 
 import java.util.List;
 
-public class ItemDto {
+public class PostDto {
     public Long id;
     public String title;
     public String body;
@@ -12,20 +12,22 @@ public class ItemDto {
     public Long updatedAt;
     public List<String> images;
     public Long userId;
+    public String userName;
 
-    public ItemDto(Item item) {
-        this.id = item.getId();
-        this.title = item.getTitle();
-        this.body = item.getText();
-        this.createdAt = item.getCreatedAt();
-        this.updatedAt = item.getUpdatedAt();
+    public PostDto(Post post) {
+        this.id = post.getId();
+        this.title = post.getTitle();
+        this.body = post.getText();
+        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
         this.images = List.of();
-        this.userId = item.getUser().getId();
+        this.userId = post.getUser().getId();
+        this.userName = post.getUser().getName();
     }
 
     @Override
     public String toString() {
-        return String.format("ItemDto[id=%d, title='%s' body=%s created_time='%d', updated_time='%d']", id,
+        return String.format("PostDto[id=%d, title='%s' body=%s created_at='%d', updated_at='%d']", id,
                 title, body, createdAt, updatedAt);
     }
 
@@ -41,7 +43,7 @@ public class ItemDto {
 
         @Override
         public String toString() {
-            return "ItemCreate[title=" + title + ", body=" + body + "]";
+            return "PostCreate[title=" + title + ", body=" + body + "]";
         }
     }
 
@@ -58,7 +60,7 @@ public class ItemDto {
 
         @Override
         public String toString() {
-            return "ItemUpdate[body=" + body + ", id=" + id + "]";
+            return "PostUpdate[body=" + body + ", id=" + id + "]";
         }
     }
 
@@ -74,7 +76,7 @@ public class ItemDto {
 
         @Override
         public String toString() {
-            return "ItemDelete[id=" + id + "]";
+            return "PostDelete[id=" + id + "]";
         }
     }
 }

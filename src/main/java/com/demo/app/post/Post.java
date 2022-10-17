@@ -1,4 +1,4 @@
-package com.demo.app.item;
+package com.demo.app.post;
 
 import com.demo.app.user.User;
 
@@ -6,28 +6,27 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "items")
-public class Item {
+@Table(name = "posts")
+public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String title;
-    @Column(name = "text")
     private String body;
-    @Column(name = "created_time", columnDefinition = "BIGINT")
+    @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;
-    @Column(name = "updated_time", columnDefinition = "BIGINT")
+    @Column(name = "updated_at", columnDefinition = "BIGINT")
     private Long updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    protected Item() {
+    protected Post() {
     }
 
-    public Item(String title, String body, User user) {
+    public Post(String title, String body, User user) {
         this.title = title;
         this.body = body;
         this.user = user;
@@ -38,7 +37,7 @@ public class Item {
 
     @Override
     public String toString() {
-        return String.format("Item[item_id=%d, text='%s', created_time='%d', updated_time='%d']", id,
+        return String.format("Post[item_id=%d, body='%s', created_at='%d', updated_at='%d']", id,
                 body, createdAt, updatedAt);
     }
 

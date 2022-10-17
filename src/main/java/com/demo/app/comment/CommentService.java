@@ -1,7 +1,7 @@
 package com.demo.app.comment;
 
-import com.demo.app.item.Item;
-import com.demo.app.item.ItemService;
+import com.demo.app.post.Post;
+import com.demo.app.post.PostService;
 import com.demo.app.user.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ public class CommentService {
     @Autowired
     private CommentRepository commentRepository;
     @Autowired
-    private ItemService itemService;
+    private PostService postService;
 
     public Comment findById(Long id) {
         Optional<Comment> optional = commentRepository.findById(id);
@@ -29,8 +29,8 @@ public class CommentService {
         return comment;
     }
 
-    public List<Comment> findByItemId(Long itemId) {
-        return commentRepository.findByItemId(itemId);
+    public List<Comment> findByPostId(Long itemId) {
+        return commentRepository.findByPostId(itemId);
     }
 
     public List<Comment> findByUserId(Long userId) {
@@ -41,13 +41,13 @@ public class CommentService {
         return commentRepository.findByUserName(name);
     }
 
-    public List<Comment> findByItemAndUser(Long itemId, Long userId) {
+    public List<Comment> findByPostAndUser(Long itemId, Long userId) {
         return commentRepository.findByItemAndUser(itemId, userId);
     }
 
-    public Comment save(String body, Long itemId, User user) {
-        Item item = itemService.getById(itemId);
-        return commentRepository.save(new Comment(body, item, user));
+    public Comment save(String body, Long postId, User user) {
+        Post post = postService.getById(postId);
+        return commentRepository.save(new Comment(body, post, user));
     }
 
     public void delete(Long id) {

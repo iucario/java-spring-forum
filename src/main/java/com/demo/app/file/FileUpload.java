@@ -9,11 +9,11 @@ import java.util.Date;
 @Table(name = "files")
 public class FileUpload {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
     private String name;
     private String url;
-    @Column(name = "created_time", columnDefinition = "BIGINT")
+    @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;
 
     @ManyToOne

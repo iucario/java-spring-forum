@@ -8,12 +8,12 @@ public class UserDto {
 
     public String name;
     public Long createdAt;
-    public int totalItems;
+    public int totalPosts;
 
-    public UserDto(final String name, final Long createdAt, final int totalItems) {
+    public UserDto(final String name, final Long createdAt, final int totalPosts) {
         this.name = name;
         this.createdAt = createdAt;
-        this.totalItems = totalItems;
+        this.totalPosts = totalPosts;
     }
 
     public static class UserLogin {

@@ -1,0 +1,18 @@
+package com.demo.app.post;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface PostRepository extends JpaRepository<Post, Long> {
+    @Query(value = "SELECT * FROM posts i WHERE i.user_id = :userId ORDER BY created_at DESC OFFSET :offset LIMIT " +
+            ":limit", nativeQuery = true)
+    List<Post> getAll(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+
+    @Query("SELECT COUNT(*) FROM Post i WHERE i.user.id = :userId")
+    int countAll(@Param("userId") Long userId);
+}

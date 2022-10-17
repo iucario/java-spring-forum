@@ -19,13 +19,13 @@ public class CommentController {
     private UserService userService;
 
     @GetMapping(produces = "application/json")
-    public List<CommentDto> getComments(@RequestParam Long itemId, @RequestParam(required = false) Long userId,
+    public List<CommentDto> getComments(@RequestParam Long postId, @RequestParam(required = false) Long userId,
                                         final HttpServletRequest request) throws Exception {
         List<Comment> commentList;
         if (userId != null) {
-            commentList = commentService.findByItemAndUser(itemId, userId);
+            commentList = commentService.findByPostAndUser(postId, userId);
         } else {
-            commentList = commentService.findByItemId(itemId);
+            commentList = commentService.findByPostId(postId);
         }
         return commentList.stream().map(CommentDto::new).toList();
     }
@@ -34,7 +34,7 @@ public class CommentController {
     public ResponseEntity<CommentDto.CommentCreate> addComment(@RequestBody CommentDto.CommentCreate commentCreate,
                                                                final HttpServletRequest request) throws Exception {
         final User user = userService.getUser(request);
-        commentService.save(commentCreate.body, commentCreate.itemId, user);
+        commentService.save(commentCreate.body, commentCreate.postId, user);
         return new ResponseEntity<>(commentCreate, HttpStatus.CREATED); // todo: response
     }
 

@@ -24,23 +24,23 @@ public class CommentDto {
 
     @Override
     public String toString() {
-        return String.format("CommentDto[id=%d, body='%s' item_id=%d user_id=%d created_time='%d', " +
-                        "updated_time='%d']", id,
+        return String.format("CommentDto[id=%d, body='%s' item_id=%d user_id=%d created_at='%d', " +
+                        "updated_at='%d']", id,
                 body, itemId, userId, createdAt, updatedAt);
     }
 
     public static class CommentCreate {
         public String body;
-        public Long itemId;
+        public Long postId;
 
-        public CommentCreate(String body, Long itemId) {
+        public CommentCreate(String body, Long postId) {
             this.body = body;
-            this.itemId = itemId;
+            this.postId = postId;
         }
 
         @Override
         public String toString() {
-            return "CommentCreate[body=" + body + ", itemId=" + itemId + "]";
+            return "CommentCreate[body=" + body + ", postId=" + postId + "]";
         }
     }
 

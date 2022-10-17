@@ -30,7 +30,7 @@ public class UserRepositoryTest {
     void whenNameExist_thenUserFound() {
         userRepository.save(savedUser);
         String name = savedUser.getName();
-        User maybeUser = userRepository.getByName(name).orElse(null);
+        User maybeUser = userRepository.findByName(name).orElse(null);
         assertNotNull(maybeUser);
     }
 }
