@@ -1,47 +1,48 @@
 package com.demo.app.post;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class PostService {
-    @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
 
-    public List<Post> getAll(Long userId, int offset) {
-        return postRepository.getAll(userId, offset, 10);
+    public PostService(PostRepository postRepository) {
+        this.postRepository = postRepository;
+    }
+
+    public List<Post> getAllPosts(Long userId, int offset, int limit) {
+        return postRepository.getAll(userId, offset, limit);
+    }
+
+    public int countUserPosts(Long userId) {
+        return postRepository.countAll(userId);
     }
 
     public Post getById(Long id) {
-        Optional<Post> optional = postRepository.findById(id);
-        Post post = null;
-        if (optional.isPresent()) {
-            post = optional.get();
-        } else {
+        return postRepository.findById(id).orElseThrow(() -> {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found for id :: " + id);
-        }
-        return post;
-    }
-
-    public Post addItem(Post post) {
-        return this.postRepository.save(post);
-    }
-
-    public void deleteItemById(Long id) {
-        this.postRepository.deleteById(id);
-    }
-
-    @Transactional
-    public void updateItem(Post post) {
-        postRepository.findById(post.getId()).ifPresent(existingItem -> {
-            existingItem.setText(post.getText());
-            existingItem.updateTime();
         });
+    }
+
+    public Post addPost(Post post) {
+        return postRepository.save(post);
+    }
+
+    public void deletePostById(Long id) {
+        postRepository.deleteById(id);
+    }
+
+    public PostDto updatePost(PostDto.PostUpdate postUpdate) {
+        Post existingPost = this.postRepository.findById(postUpdate.id).orElseThrow(() -> {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found for id :: " + postUpdate.id);
+        });
+        existingPost.setBody(postUpdate.body);
+        existingPost.updateTime();
+        Post updatedPost = postRepository.save(existingPost);
+        return new PostDto(updatedPost);
     }
 }

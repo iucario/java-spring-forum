@@ -38,8 +38,7 @@ class PostRepositoryTest {
 
     @Test
     void getAll() {
-        // FIXME: can't use offset and limit together. Why?
-        List<Post> posts = postRepository.findAll(savedUser.getId(), 100);
+        List<Post> posts = postRepository.getAll(savedUser.getId(), 0, 100);
         assertEquals(1, posts.size());
     }
 

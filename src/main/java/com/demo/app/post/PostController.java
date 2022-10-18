@@ -21,43 +21,41 @@ public class PostController {
     }
 
     @GetMapping(produces = "application/json")
-    public List<PostDto> getAllItems(final HttpServletRequest request) throws Exception {
+    public List<PostDto> getAllItems(final HttpServletRequest request) {
         final User user = userService.getUser(request);
         int offset = 0;
         if (request.getParameter("offset") != null) {
             offset = Integer.parseInt(request.getParameter("offset"));
         }
-        return postService.getAll(user.getId(), offset).stream().map(post -> new PostDto(post)).toList();
+        return postService.getAllPosts(user.getId(), offset, 100).stream().map(post -> new PostDto(post)).toList();
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public PostDto addNewItem(@RequestBody PostDto.ItemCreate itemCreate, final HttpServletRequest request) throws Exception {
+    public PostDto addNewPost(@RequestBody PostDto.PostCreate postCreate, final HttpServletRequest request) {
         final User user = userService.getUser(request);
-        Post post = new Post(itemCreate.title, itemCreate.body, user);
-        postService.addItem(post);
+        Post post = new Post(postCreate.title, postCreate.body, user);
+        postService.addPost(post);
         return new PostDto(post);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
-    public PostDto updateItem(@RequestBody PostDto.ItemUpdate item, final HttpServletRequest request) throws Exception {
+    public PostDto updatePost(@RequestBody PostDto.PostUpdate postUpdate, final HttpServletRequest request) {
         final User user = userService.getUser(request);
-        Post i = postService.getById(item.id);
-        if (!user.getId().equals(i.getUser().getId())) {
+        Post post = postService.getById(postUpdate.id);
+        if (!user.getId().equals(post.getUser().getId())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        i.setText(item.body);
-        postService.updateItem(i);
-        return new PostDto(i);
+        return postService.updatePost(postUpdate);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public String deleteItem(@PathVariable Long id, final HttpServletRequest request) throws Exception {
+    public String deletePost(@PathVariable Long id, final HttpServletRequest request) {
         final User user = userService.getUser(request);
         Post n = postService.getById(id);
         if (!n.getUser().getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        postService.deleteItemById(id);
+        postService.deletePostById(id);
         return "Deleted %d".formatted(id);
     }
 

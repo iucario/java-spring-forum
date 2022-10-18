@@ -49,8 +49,12 @@ public class Post {
         return body;
     }
 
-    public void setText(String text) {
-        this.body = text;
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setBody(String body) {
+        this.body = body;
     }
 
     public User getUser() {

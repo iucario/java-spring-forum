@@ -1,8 +1,6 @@
 package com.demo.app.user;
 
 import com.demo.app.auth.JwtUtil;
-import io.jsonwebtoken.Claims;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,13 +12,16 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/user")
 public class UserController {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
+
+    UserController(UserService userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
-    public UserDto.LoginResponse login(@RequestBody final UserDto.UserLogin login) throws Exception {
+    public UserDto.LoginResponse login(@RequestBody final UserDto.UserLogin login) {
         if (!userService.authenticate(login.name, login.password)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login. Please check your username and" +
                     " password.");
@@ -29,21 +30,12 @@ public class UserController {
     }
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> register(@Valid @RequestBody UserDto.UserCreate user) throws Exception {
-        try {
-            userService.findByName(user.name);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
-        } catch (ResponseStatusException e) {
-            userService.saveUser(user.name, user.password);
-            return ResponseEntity.status(HttpStatus.CREATED).body("User created");
-        }
+    public ResponseEntity<String> register(@Valid @RequestBody UserDto.UserCreate user) {
+        return userService.register(user);
     }
 
     @GetMapping(value = "/me", produces = "application/json")
-    public UserDto getMe(final HttpServletRequest request) throws Exception {
-        final Claims claims = (Claims) request.getAttribute("claims");
-        final User user = userService.findByName(claims.get("sub", String.class));
-        int totalItems = userService.countItems(user.getId());
-        return new UserDto(user.getName(), user.getCreatedAt(), totalItems);
+    public UserDto getMe(final HttpServletRequest request) {
+        return userService.getUserInfo(request);
     }
 }

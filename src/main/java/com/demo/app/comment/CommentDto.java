@@ -48,9 +48,9 @@ public class CommentDto {
         public Long id;
         public String body;
 
-        public CommentUpdate(String body, Long id) {
-            this.body = body;
+        public CommentUpdate(Long id, String body) {
             this.id = id;
+            this.body = body;
         }
 
         @Override
