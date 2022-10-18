@@ -23,8 +23,7 @@ public class UserController {
     @PostMapping(value = "/login", consumes = "application/json", produces = "application/json")
     public UserDto.LoginResponse login(@RequestBody final UserDto.UserLogin login) {
         if (!userService.authenticate(login.name, login.password)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid login. Please check your username and" +
-                    " password.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password");
         }
         return new UserDto.LoginResponse(jwtUtil.generateToken(login.name));
     }

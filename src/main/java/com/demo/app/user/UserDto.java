@@ -19,6 +19,11 @@ public class UserDto {
     public static class UserLogin {
         public String name;
         public String password;
+
+        public UserLogin(final String name, final String password) {
+            this.name = name;
+            this.password = password;
+        }
     }
 
     public static class LoginResponse {
