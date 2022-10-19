@@ -6,6 +6,8 @@ Authentication: Filter and JWT
 
 Database: PostgreSQL
 
+Technologies: JPA, Hibernate, Spring
+
 ![](Demo%20Diagram.png)
 
 ## Getting Started
