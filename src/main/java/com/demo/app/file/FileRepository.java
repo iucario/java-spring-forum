@@ -5,14 +5,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface FileRepository extends JpaRepository<FileUpload, Long> {
-    @Query("SELECT u from FileUpload u WHERE u.name = :name")
-    Optional<FileUpload> findByName(@Param(value = "name") String name);
+public interface FileRepository extends JpaRepository<FileEntity, Long> {
+    @Query("SELECT u from FileEntity u WHERE u.name = :name")
+    Optional<FileEntity> findByName(@Param(value = "name") String name);
 
-    @Query("SELECT u from FileUpload u WHERE u.user.id = :userId")
-    Collection<FileUpload> findAllByUser(@Param(value = "userId") Long userId);
+    @Query("SELECT u from FileEntity u WHERE u.user.id = :userId")
+    List<FileEntity> findAllByUser(@Param(value = "userId") Long userId);
 }

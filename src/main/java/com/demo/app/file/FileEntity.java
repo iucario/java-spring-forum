@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Entity
 @Table(name = "files")
-public class FileUpload {
+public class FileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -20,15 +20,14 @@ public class FileUpload {
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    public FileUpload() {
+    public FileEntity() {
     }
 
-    public FileUpload(String name, String url, User user) {
+    public FileEntity(String name, String url, User user) {
         this.name = name;
         this.url = url;
         this.user = user;
-        final long timestamp = new Date().getTime();
-        this.createdAt = timestamp;
+        this.createdAt = new Date().getTime();
     }
 
     public String getName() {

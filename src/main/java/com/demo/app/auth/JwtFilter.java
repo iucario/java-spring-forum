@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 
 public class JwtFilter extends GenericFilterBean {
-    private JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     public JwtFilter(final String secret) {
         this.jwtUtil = new JwtUtil(secret);

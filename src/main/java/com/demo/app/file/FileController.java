@@ -2,11 +2,9 @@ package com.demo.app.file;
 
 import com.demo.app.user.User;
 import com.demo.app.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,14 +12,17 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.List;
 
-@Controller()
+@RestController
 @RequestMapping("/file")
 public class FileController {
 
-    @Autowired
-    private FileService storageService;
-    @Autowired
-    private UserService userService;
+    private final FileService storageService;
+    private final UserService userService;
+
+    FileController(FileService storageService, UserService userService) {
+        this.storageService = storageService;
+        this.userService = userService;
+    }
 
     @PostMapping("/upload")
     public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
@@ -39,13 +40,11 @@ public class FileController {
     @GetMapping("/list")
     public ResponseEntity<String> getFiles(final HttpServletRequest request) {
         User user = userService.getUser(request);
-        System.out.println("=> user: " + user);
-        List<String> fileList = storageService.loadAll(user).toList();
+        List<String> fileList = storageService.getAllUserFiles(user.getId()).toList();
         return ResponseEntity.ok(fileList.toString());
     }
 
     @GetMapping("/filename/{filename:.+}")
-    @ResponseBody
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         try {
             Resource file = storageService.loadAsResource(filename);
@@ -57,7 +56,6 @@ public class FileController {
     }
 
     @DeleteMapping("/delete/{filename:.+}")
-    @ResponseBody
     public ResponseEntity<String> handleFileDelete(@PathVariable String filename,
                                                    final HttpServletRequest request) {
         final User user = userService.getUser(request);

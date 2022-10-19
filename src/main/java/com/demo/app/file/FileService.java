@@ -1,7 +1,6 @@
 package com.demo.app.file;
 
 import com.demo.app.user.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -19,22 +18,25 @@ public class FileService {
     @Value("${file.upload-dir}")
     private String uploadDir;
 
-    @Autowired
-    private FileRepository fileRepository;
+    private final FileRepository fileRepository;
+
+    FileService(FileRepository fileRepository) {
+        this.fileRepository = fileRepository;
+    }
 
     String store(MultipartFile multipartFile, User user) throws IOException {
         String uuid = UUID.randomUUID().toString();
         String extension = fileExtension(multipartFile.getOriginalFilename());
         String filename = uuid + extension;
         String path = Paths.get(uploadDir, filename).toString();
-        System.out.println("=> path: " + path);
         multipartFile.transferTo(new File(path));
-        fileRepository.save(new FileUpload(filename, path, user));
+        fileRepository.save(new FileEntity(filename, path, user));
         return path;
     }
 
-    Stream<String> loadAll(User user) {
-        return fileRepository.findAllByUser(user.getId()).stream().map(FileUpload::getUrl);
+    Stream<String> getAllUserFiles(Long userId) {
+        return fileRepository.findAllByUser(userId)
+                .stream().map(FileEntity::getUrl);
     }
 
     Resource loadAsResource(String filename) throws FileNotFoundException {
@@ -44,18 +46,18 @@ public class FileService {
     }
 
     void delete(String filename, User user) { // TODO: better error handling
-        FileUpload fileUpload = fileRepository.findByName(filename).orElse(null);
-        if (fileUpload == null) {
+        FileEntity fileEntity = fileRepository.findByName(filename).orElse(null);
+        if (fileEntity == null) {
             throw new RuntimeException("file not found");
         }
-        if (!fileUpload.getUserId().equals(user.getId())) {
+        if (!fileEntity.getUserId().equals(user.getId())) {
             throw new RuntimeException("Unauthorized");
         }
         String path = Paths.get(uploadDir, filename).toString();
         File file = new File(path);
         if (file.isFile()) {
             file.delete();
-            fileRepository.delete(fileUpload);
+            fileRepository.delete(fileEntity);
         } else {
             throw new RuntimeException("Not a file");
         }
