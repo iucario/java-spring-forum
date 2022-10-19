@@ -1,6 +1,8 @@
-# Java Spring CRUD Demo
+# Java Spring Forum
 
-An API demo.
+An forum API demo. 
+
+Features: Creating user, posting, commenting and uploading files.
 
 Authentication: Filter and JWT
 
@@ -47,4 +49,3 @@ Technologies: JPA, Hibernate, Spring
 
 - `/user/me` get
 - `/api/post` post, get, put, delete
-
