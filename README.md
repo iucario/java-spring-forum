@@ -1,6 +1,6 @@
 # Java Spring Forum
 
-An forum API demo. 
+An forum API demo.
 
 Features: Creating user, posting, commenting and uploading files.
 
@@ -14,38 +14,11 @@ Technologies: JPA, Hibernate, Spring
 
 ## Getting Started
 
-- `/user/register`
+OpenAPI docs: https://localhost:8080/swagger
 
-  POST
-
-    ```json
-    {
-      "name": "username",
-      "password": "password"
-    }
-    ```
-  Response
-
-  status: 200 OK body: User created
-
-- `/user/login`
-
-  POST
-
-    ```json
-    {
-      "name": "username",
-      "password": "password"
-    }
-    ```
-
-  Response
-
-    ```json
-    {
-      "token": "JWT token"
-    }
-    ```
-
+- `/user/register` post
+- `/user/login` post
 - `/user/me` get
 - `/api/post` post, get, put, delete
+- `/api/comment` post, get, put, delete
+- `/file/{}` post, get, delete 
