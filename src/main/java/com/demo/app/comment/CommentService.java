@@ -26,8 +26,8 @@ public class CommentService {
         });
     }
 
-    public List<Comment> getByPostId(Long itemId) {
-        return commentRepository.findByPostId(itemId);
+    public List<CommentDto> getByPostId(Long postId) {
+        return commentRepository.findByPostId(postId).stream().map(CommentDto::new).toList();
     }
 
     public List<Comment> getByUserId(Long userId) {
@@ -38,13 +38,14 @@ public class CommentService {
         return commentRepository.findByUserName(name);
     }
 
-    public List<Comment> getByPostAndUser(Long itemId, Long userId) {
-        return commentRepository.findByPostAndUser(itemId, userId);
+    public List<CommentDto> getByPostAndUser(Long itemId, Long userId) {
+        return commentRepository.findByPostAndUser(itemId, userId).stream().map(CommentDto::new).toList();
     }
 
-    public Comment addComment(CommentDto.CommentCreate commentCreate, User user) {
+    public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
-        return commentRepository.save(new Comment(commentCreate.body, post, user));
+        Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
+        return new CommentDto(comment);
     }
 
     public ResponseEntity<String> deleteComment(Long id, User user) {
@@ -58,13 +59,13 @@ public class CommentService {
 
     }
 
-    public ResponseEntity<CommentDto> updateComment(CommentDto.CommentUpdate commentUpdate, User user) {
+    public CommentDto updateComment(CommentDto.CommentUpdate commentUpdate, User user) {
         Comment comment = getById(commentUpdate.id);
         if (!comment.getUser().getId().equals(user.getId())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
         comment.setBody(commentUpdate.body);
-        commentRepository.save(comment);
-        return ResponseEntity.ok(new CommentDto(comment));
+        comment.updateTime();
+        return new CommentDto(commentRepository.save(comment));
     }
 }

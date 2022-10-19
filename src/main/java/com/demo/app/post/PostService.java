@@ -14,8 +14,8 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public List<Post> getAllPosts(Long userId, int offset, int limit) {
-        return postRepository.getAll(userId, offset, limit);
+    public List<PostDto> getAllPosts(Long userId, int offset, int limit) {
+        return postRepository.getAll(userId, offset, limit).stream().map(PostDto::new).toList();
     }
 
     public int countUserPosts(Long userId) {
@@ -28,8 +28,8 @@ public class PostService {
         });
     }
 
-    public Post addPost(Post post) {
-        return postRepository.save(post);
+    public PostDto addPost(Post post) {
+        return new PostDto(postRepository.save(post));
     }
 
     public void deletePostById(Long id) {

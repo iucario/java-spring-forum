@@ -33,32 +33,32 @@ public class PostServiceTest {
         postService = new PostService(postRepository);
         userService = new UserService(userRepository, postRepository);
         savedUser = new User("testname", "testpassword");
+        savedUser.setId(1L);
         savedPost = new Post("title", "This is body", savedUser);
+        savedPost.setId(1L);
     }
 
     @Test
     void canAddPost() {
         when(postRepository.save(any(Post.class))).thenReturn(savedPost);
-        Post post = postService.addPost(savedPost);
+        postService.addPost(savedPost);
         verify(postRepository).save(any(Post.class));
-        assertEquals(savedPost, post);
     }
 
     @Test
     void canGetById() {
-        when(postRepository.findById(savedPost.getId())).thenReturn(Optional.of(savedPost));
+        when(postRepository.findById(1L)).thenReturn(Optional.of(savedPost));
         postService.getById(savedPost.getId());
         verify(postRepository).findById(savedPost.getId());
     }
 
     @Test
     void canGetAll() {
-        when(postRepository.getAll(savedUser.getId(), 0, 100)).thenReturn(List.of(savedPost));
-        postService.addPost(savedPost);
-        List<Post> posts = postService.getAllPosts(savedUser.getId(), 0, 100);
-        verify(postRepository).getAll(savedUser.getId(), 0, 100);
+        when(postRepository.getAll(1L, 0, 100)).thenReturn(List.of(savedPost));
+        List<PostDto> posts = postService.getAllPosts(1L, 0, 100);
+        verify(postRepository).getAll(1L, 0, 100);
         assertEquals(1, posts.size());
-        assertEquals(savedPost, posts.get(0));
+        assertEquals(savedPost.getBody(), posts.get(0).body);
     }
 
     @Test

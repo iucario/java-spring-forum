@@ -37,15 +37,19 @@ public class Post {
 
     @Override
     public String toString() {
-        return String.format("Post[item_id=%d, body='%s', created_at='%d', updated_at='%d']", id,
-                body, createdAt, updatedAt);
+        return String.format("Post[post_id=%d, body='%s', created_at=%d, updated_at=%d, user=%s]", id,
+                body, createdAt, updatedAt, user.getName());
     }
 
     public Long getId() {
         return id;
     }
 
-    public String getText() {
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getBody() {
         return body;
     }
 

@@ -3,19 +3,19 @@ package com.demo.app.comment;
 public class CommentDto {
     public Long id;
     public String body;
-    public Long itemId;
+    public Long postId;
     public Long userId;
     public Long createdAt;
     public Long updatedAt;
     public String userName;
 
-    public CommentDto() {
+    protected CommentDto() {
     }
 
     public CommentDto(Comment comment) {
         this.id = comment.getId();
         this.body = comment.getBody();
-        this.itemId = comment.getItem().getId();
+        this.postId = comment.getItem().getId();
         this.userId = comment.getUser().getId();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
@@ -24,9 +24,9 @@ public class CommentDto {
 
     @Override
     public String toString() {
-        return String.format("CommentDto[id=%d, body='%s' item_id=%d user_id=%d created_at='%d', " +
+        return String.format("CommentDto[id=%d, body='%s' post_id=%d user_id=%d created_at='%d', " +
                         "updated_at='%d']", id,
-                body, itemId, userId, createdAt, updatedAt);
+                body, postId, userId, createdAt, updatedAt);
     }
 
     public static class CommentCreate {

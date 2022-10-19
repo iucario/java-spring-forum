@@ -21,21 +21,20 @@ public class PostController {
     }
 
     @GetMapping(produces = "application/json")
-    public List<PostDto> getAllItems(final HttpServletRequest request) {
+    public List<PostDto> getAllPosts(final HttpServletRequest request) {
         final User user = userService.getUser(request);
         int offset = 0;
         if (request.getParameter("offset") != null) {
             offset = Integer.parseInt(request.getParameter("offset"));
         }
-        return postService.getAllPosts(user.getId(), offset, 100).stream().map(post -> new PostDto(post)).toList();
+        return postService.getAllPosts(user.getId(), offset, 100);
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
     public PostDto addNewPost(@RequestBody PostDto.PostCreate postCreate, final HttpServletRequest request) {
         final User user = userService.getUser(request);
         Post post = new Post(postCreate.title, postCreate.body, user);
-        postService.addPost(post);
-        return new PostDto(post);
+        return postService.addPost(post);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")

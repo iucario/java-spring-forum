@@ -39,8 +39,11 @@ public class CommentServiceTest {
         PostService postService = new PostService(postRepository);
         commentService = new CommentService(commentRepository, postService);
         savedUser = new User("testname", "testpassword");
+        savedUser.setId(1L);
         savedPost = new Post("title", "This is body", savedUser);
+        savedPost.setId(1L);
         savedComment = new Comment("This is comment", savedPost, savedUser);
+        savedComment.setId(1L);
     }
 
     @Test
@@ -48,9 +51,9 @@ public class CommentServiceTest {
         CommentDto.CommentCreate commentCreate = new CommentDto.CommentCreate("This is comment", savedPost.getId());
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
         when(postRepository.findById(savedPost.getId())).thenReturn(Optional.of(savedPost));
-        Comment comment = commentService.addComment(commentCreate, savedUser);
+        CommentDto comment = commentService.addComment(commentCreate, savedUser);
         verify(commentRepository).save(any(Comment.class));
-        assertEquals(savedComment, comment);
+        assertEquals(savedComment.getBody(), comment.body);
     }
 
     @Test
@@ -75,6 +78,22 @@ public class CommentServiceTest {
         when(commentRepository.findByPostAndUser(savedPost.getId(), savedUser.getId())).thenReturn(List.of(savedComment));
         commentService.getByPostAndUser(savedPost.getId(), savedUser.getId());
         verify(commentRepository).findByPostAndUser(savedPost.getId(), savedUser.getId());
+    }
+
+    @Test
+    void canDeleteComment() {
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(savedComment));
+        commentService.deleteComment(1L, savedUser);
+        verify(commentRepository).deleteById(1L);
+    }
+
+    @Test
+    void canUpdateComment() {
+        CommentDto.CommentUpdate commentUpdate = new CommentDto.CommentUpdate(1L, "This is updated comment");
+        when(commentRepository.findById(1L)).thenReturn(Optional.of(savedComment));
+        when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
+        commentService.updateComment(commentUpdate, savedUser);
+        verify(commentRepository).save(any(Comment.class));
     }
 
 }

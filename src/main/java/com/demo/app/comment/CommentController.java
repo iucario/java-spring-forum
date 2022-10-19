@@ -2,7 +2,6 @@ package com.demo.app.comment;
 
 import com.demo.app.user.User;
 import com.demo.app.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,21 +12,21 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/comment")
 public class CommentController {
-    @Autowired
-    private CommentService commentService;
-    @Autowired
-    private UserService userService;
+    private final CommentService commentService;
+    private final UserService userService;
+
+    CommentController(CommentService commentService, UserService userService) {
+        this.commentService = commentService;
+        this.userService = userService;
+    }
 
     @GetMapping(produces = "application/json")
-    public List<CommentDto> getComments(@RequestParam Long postId, @RequestParam(required = false) Long userId,
-                                        final HttpServletRequest request) throws Exception {
-        List<Comment> commentList;
+    public List<CommentDto> getComments(@RequestParam Long postId, @RequestParam(required = false) Long userId) {
         if (userId != null) {
-            commentList = commentService.getByPostAndUser(postId, userId);
+            return commentService.getByPostAndUser(postId, userId);
         } else {
-            commentList = commentService.getByPostId(postId);
+            return commentService.getByPostId(postId);
         }
-        return commentList.stream().map(CommentDto::new).toList();
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
@@ -45,10 +44,10 @@ public class CommentController {
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<CommentDto> updateComment(@RequestBody CommentDto.CommentUpdate comment,
-                                                    final HttpServletRequest request) {
+    public CommentDto updateComment(@RequestBody CommentDto.CommentUpdate commentUpdate,
+                                    final HttpServletRequest request) {
         final User user = userService.getUser(request);
-        return commentService.updateComment(comment, user);
+        return commentService.updateComment(commentUpdate, user);
     }
 
 }
