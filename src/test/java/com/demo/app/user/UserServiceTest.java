@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -30,6 +31,7 @@ class UserServiceTest {
     void setUp() {
         userService = new UserService(userRepository, postRepository);
         savedUser = new User("testname", "testpassword");
+        savedUser.setId(1L);
     }
 
     @Test
@@ -55,6 +57,18 @@ class UserServiceTest {
     }
 
     @Test
+    void willReturn404() {
+        when(userRepository.findByName(savedUser.getName())).thenReturn(Optional.empty());
+        try {
+            userService.getByName("testname");
+        } catch (ResponseStatusException e) {
+            assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+            assertEquals("User not found for name :: testname", e.getReason());
+        }
+        verify(userRepository).findByName("testname");
+    }
+
+    @Test
     void canGetById() {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
         userService.getById(savedUser.getId());
@@ -67,4 +81,10 @@ class UserServiceTest {
         verify(userRepository).save(any());
     }
 
+    @Test
+    void canGetUserProfile() {
+        when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
+        userService.getUserProfile(savedUser.getId());
+        verify(userRepository).findById(savedUser.getId());
+    }
 }

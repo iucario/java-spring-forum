@@ -43,6 +43,12 @@ public class UserService {
                 "User not found for id :: " + id));
     }
 
+    public UserDto getUserProfile(Long id) {
+        User user = getById(id);
+        int totalPosts = postRepository.countUserPosts(id);
+        return new UserDto(user, totalPosts);
+    }
+
     public void saveUser(String name, String password) {
         if (userRepository.findByName(name).isPresent()) {
             throw new RuntimeException("User already exists");
@@ -63,8 +69,8 @@ public class UserService {
     public UserDto getUserInfo(HttpServletRequest request) {
         final Claims claims = (Claims) request.getAttribute("claims");
         final User user = getByName(claims.get("sub", String.class));
-        int totalItems = postRepository.countAll(user.getId());
-        return new UserDto(user.getName(), user.getCreatedAt(), totalItems);
+        int totalPosts = postRepository.countUserPosts(user.getId());
+        return new UserDto(user, totalPosts);
     }
 
     public void deleteUserById(Long id) {

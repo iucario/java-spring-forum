@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.Date;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -35,6 +33,8 @@ class UserControllerTest {
 
     @BeforeEach
     void setUp() {
+        savedUser = new User("testname", "testpassword");
+        savedUser.setId(1L);
     }
 
     @Test
@@ -63,7 +63,7 @@ class UserControllerTest {
     @Test
     void canRegister() throws Exception {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "Greatpassword1!");
-        UserDto result = new UserDto("testname", new Date().getTime(), 0);
+        UserDto result = new UserDto(savedUser, 0);
         ResponseEntity<String> resp = ResponseEntity.status(HttpStatus.CREATED).body("User created");
         when(userService.register(userCreate)).thenReturn(resp);
         mockMvc.perform(post("/user/register")
@@ -75,7 +75,7 @@ class UserControllerTest {
     @Test
     void willReturn422() throws Exception {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "badpassword");
-        UserDto result = new UserDto("testname", new Date().getTime(), 0);
+        UserDto result = new UserDto(savedUser, 0);
         ResponseEntity<String> resp = ResponseEntity.status(HttpStatus.CREATED).body("User created");
         when(userService.register(userCreate)).thenReturn(resp);
         mockMvc.perform(post("/user/register")
@@ -86,12 +86,12 @@ class UserControllerTest {
 
     @Test
     void canGetMe() throws Exception {
-        UserDto result = new UserDto("testname", new Date().getTime(), 0);
+        UserDto result = new UserDto(savedUser, 1);
         when(userService.getUserInfo(any())).thenReturn(result);
         mockMvc.perform(get("/user/me")
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.name", Matchers.is("testname")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPosts", Matchers.is(0)));
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPosts", Matchers.is(1)));
     }
 }

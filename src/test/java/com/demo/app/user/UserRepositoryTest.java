@@ -40,4 +40,11 @@ public class UserRepositoryTest {
         User maybeUser = userRepository.findByName(name).orElse(null);
         assertNull(maybeUser);
     }
+
+    @Test
+    void canFindByName() {
+        String name = "TESTNAME";
+        User maybeUser = userRepository.findByName(name).orElse(null);
+        assertNotNull(maybeUser);
+    }
 }

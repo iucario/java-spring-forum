@@ -37,4 +37,9 @@ public class UserController {
     public UserDto getMe(final HttpServletRequest request) {
         return userService.getUserInfo(request);
     }
+
+    @GetMapping(value = "/{id}", produces = "application/json")
+    public UserDto getUserProfile(@PathVariable Long id) {
+        return userService.getUserProfile(id);
+    }
 }

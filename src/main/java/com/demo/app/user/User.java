@@ -13,6 +13,7 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     private Long id;
+    @Column(unique = true)
     private String name;
     @Column(name = "hashed_password")
     private String hashedPassword;

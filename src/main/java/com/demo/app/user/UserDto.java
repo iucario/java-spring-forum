@@ -6,13 +6,15 @@ import javax.validation.constraints.Pattern;
 
 public class UserDto {
 
+    public Long id;
     public String name;
     public Long createdAt;
     public int totalPosts;
 
-    public UserDto(final String name, final Long createdAt, final int totalPosts) {
-        this.name = name;
-        this.createdAt = createdAt;
+    public UserDto(final User user, int totalPosts) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.createdAt = user.getCreatedAt();
         this.totalPosts = totalPosts;
     }
 
