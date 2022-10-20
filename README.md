@@ -1,5 +1,7 @@
 # Java Spring Forum
 
+![workflow](https://github.com/iucario/java-spring-forum/actions/workflows/gradle.yml/badge.svg)
+
 An forum API demo.
 
 Features: Creating user, posting, commenting and uploading files.
