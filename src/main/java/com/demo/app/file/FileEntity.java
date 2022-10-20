@@ -9,7 +9,7 @@ import java.util.Date;
 @Table(name = "files")
 public class FileEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "file_seq")
     private Long id;
     private String name;
     private String url;

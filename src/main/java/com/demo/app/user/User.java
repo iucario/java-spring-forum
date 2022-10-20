@@ -11,7 +11,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     private Long id;
     private String name;
     @Column(name = "hashed_password")

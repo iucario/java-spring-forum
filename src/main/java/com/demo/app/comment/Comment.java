@@ -10,7 +10,7 @@ import java.util.Date;
 @Table(name = "comments")
 public class Comment {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comment_seq")
     private Long id;
     private String body;
     @Column(name = "created_at", columnDefinition = "BIGINT")
