@@ -28,4 +28,11 @@ OpenAPI docs: https://localhost:8080/swagger
 - `/user/me` get
 - `/api/post` post, get, put, delete
 - `/api/comment` post, get, put, delete
-- `/file/{}` post, get, delete 
+- `/file/{}` post, get, delete
+
+### API Tests
+
+install newman
+`npm install -g newman`
+
+cd to this project. Then run `newman run scripts/Spring.postman_collection.json`
