@@ -1,6 +1,7 @@
 # Java Spring Forum
 
 ![workflow](https://github.com/iucario/java-spring-forum/actions/workflows/gradle.yml/badge.svg)
+[![codecov](https://codecov.io/gh/iucario/java-spring-forum/branch/main/graph/badge.svg?token=BCPV9T9XSW)](https://codecov.io/gh/iucario/java-spring-forum)
 
 An forum API demo.
 
