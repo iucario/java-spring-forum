@@ -30,11 +30,7 @@ jobs:
           distribution: 'temurin'
       - name: Grant Permissions to gradlew
         run: chmod +x ./gradlew
-      - name: Run build with Gradle wrapper
-        run: ./gradlew build --scan
-      - name: Test
-        run: ./gradlew test
-      - name: jacocoTestReport
-        run: ./gradlew jacocoTestReport
+      - name: Install dependencies, run tests, and collect coverage
+        run: ./gradlew build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
