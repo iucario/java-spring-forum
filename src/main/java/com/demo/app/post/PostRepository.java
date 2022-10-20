@@ -15,5 +15,5 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> getAll(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
 
     @Query("SELECT COUNT(*) FROM Post i WHERE i.user.id = :userId")
-    int countAll(@Param("userId") Long userId);
+    int countUserPosts(@Param("userId") Long userId);
 }

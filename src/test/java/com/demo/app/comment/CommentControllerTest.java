@@ -71,13 +71,13 @@ class CommentControllerTest {
         CommentDto result = new CommentDto(savedComment);
         when(userService.getUser(any())).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
-        when(commentService.addComment(commentCreate, savedUser)).thenReturn(result);
+        when(commentService.addComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(post("/api/comment")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"body\":\"content\",\"postId\":1}"))
                 .andExpect(status().isCreated())
-                .andExpect(content().json(objectMapper.writeValueAsString(commentCreate)));
+                .andExpect(content().json(objectMapper.writeValueAsString(result)));
     }
 
     @Test

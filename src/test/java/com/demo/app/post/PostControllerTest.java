@@ -74,7 +74,8 @@ class PostControllerTest {
     @Test
     void canUpdatePost() throws Exception {
         PostDto result = new PostDto(savedPost);
-        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("title", 1L);
+        result.body = "body";
+        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("body", 1L);
         when(postService.getById(1L)).thenReturn(savedPost);
         when(postService.updatePost(any())).thenReturn(result);
         when(userService.getUser(any())).thenReturn(savedUser);
@@ -85,7 +86,7 @@ class PostControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("title")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.body", Matchers.is("content")))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.body", Matchers.is("body")))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.userId", Matchers.is(1)));
     }
 

@@ -9,45 +9,37 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.util.List;
 
 @RestController
 @RequestMapping("/file")
 public class FileController {
 
-    private final FileService storageService;
+    private final FileService fileService;
     private final UserService userService;
 
-    FileController(FileService storageService, UserService userService) {
-        this.storageService = storageService;
+    FileController(FileService fileService, UserService userService) {
+        this.fileService = fileService;
         this.userService = userService;
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> handleFileUpload(@RequestParam("file") MultipartFile file,
-                                                   final HttpServletRequest request) {
+    public FileDto handleFileUpload(@RequestParam("file") MultipartFile file,
+                                    final HttpServletRequest request) {
         final User user = userService.getUser(request);
-        try {
-            String path = storageService.store(file, user);
-            return ResponseEntity.ok(path);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body("file upload failed");
-        }
+        return fileService.handleUpload(file, user);
     }
 
     @GetMapping("/list")
-    public ResponseEntity<String> getFiles(final HttpServletRequest request) {
+    public List<FileDto> getFiles(final HttpServletRequest request) {
         User user = userService.getUser(request);
-        List<String> fileList = storageService.getAllUserFiles(user.getId()).toList();
-        return ResponseEntity.ok(fileList.toString());
+        return fileService.getAllUserFiles(user.getId());
     }
 
-    @GetMapping("/filename/{filename:.+}")
+    @GetMapping(value = "/filename/{filename:.+}", produces = "application/octet-stream")
     public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
         try {
-            Resource file = storageService.loadAsResource(filename);
+            Resource file = fileService.loadAsResource(filename);
             return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION,
                     "attachment; filename=\"" + file.getFilename() + "\"").body(file);
         } catch (Exception e) {
@@ -60,7 +52,7 @@ public class FileController {
                                                    final HttpServletRequest request) {
         final User user = userService.getUser(request);
         try {
-            storageService.delete(filename, user);
+            fileService.delete(filename, user);
             return ResponseEntity.ok("file deleted");
         } catch (Exception e) {
             System.out.println(e.getMessage());

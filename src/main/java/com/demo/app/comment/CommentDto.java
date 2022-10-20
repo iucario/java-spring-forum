@@ -7,7 +7,7 @@ public class CommentDto {
     public Long userId;
     public Long createdAt;
     public Long updatedAt;
-    public String userName;
+    public String username;
 
     protected CommentDto() {
     }
@@ -19,17 +19,18 @@ public class CommentDto {
         this.userId = comment.getUser().getId();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
-        this.userName = comment.getUser().getName();
+        this.username = comment.getUser().getName();
     }
 
     @Override
     public String toString() {
-        return String.format("CommentDto[id=%d, body='%s' post_id=%d user_id=%d created_at='%d', " +
+        return String.format("CommentDto[id=%d, body=%s post_id=%d username=%s created_at=%d, " +
                         "updated_at='%d']", id,
-                body, postId, userId, createdAt, updatedAt);
+                body, postId, username, createdAt, updatedAt);
     }
 
     public static class CommentCreate {
+        public Long id;
         public String body;
         public Long postId;
 
@@ -40,7 +41,7 @@ public class CommentDto {
 
         @Override
         public String toString() {
-            return "CommentCreate[body=" + body + ", postId=" + postId + "]";
+            return String.format("CommentCreate[id=%d, body=%s post_id=%d]", id, body, postId);
         }
     }
 

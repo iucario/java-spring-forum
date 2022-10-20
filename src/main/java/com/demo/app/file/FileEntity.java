@@ -49,4 +49,8 @@ public class FileEntity {
     public Long getUserId() {
         return user.getId();
     }
+
+    public User getUser() {
+        return user;
+    }
 }

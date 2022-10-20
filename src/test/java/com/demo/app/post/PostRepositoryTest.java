@@ -44,7 +44,7 @@ class PostRepositoryTest {
 
     @Test
     void countAll() {
-        int count = postRepository.countAll(savedUser.getId());
+        int count = postRepository.countUserPosts(savedUser.getId());
         assertEquals(1, count);
     }
 }

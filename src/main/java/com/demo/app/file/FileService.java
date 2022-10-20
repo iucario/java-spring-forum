@@ -8,35 +8,40 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @Service
 public class FileService {
 
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final String uploadDir;
 
     private final FileRepository fileRepository;
 
-    FileService(FileRepository fileRepository) {
+    FileService(FileRepository fileRepository, @Value("${file.upload-dir}") String uploadDir) {
         this.fileRepository = fileRepository;
+        this.uploadDir = uploadDir;
+        try {
+            Files.createDirectories(Paths.get(uploadDir));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    String store(MultipartFile multipartFile, User user) throws IOException {
+    public FileEntity store(MultipartFile multipartFile, User user) throws IOException {
         String uuid = UUID.randomUUID().toString();
         String extension = fileExtension(multipartFile.getOriginalFilename());
         String filename = uuid + extension;
         String path = Paths.get(uploadDir, filename).toString();
         multipartFile.transferTo(new File(path));
-        fileRepository.save(new FileEntity(filename, path, user));
-        return path;
+        return fileRepository.save(new FileEntity(filename, path, user));
     }
 
-    Stream<String> getAllUserFiles(Long userId) {
+    List<FileDto> getAllUserFiles(Long userId) {
         return fileRepository.findAllByUser(userId)
-                .stream().map(FileEntity::getUrl);
+                .stream().map(FileDto::new).toList();
     }
 
     Resource loadAsResource(String filename) throws FileNotFoundException {
@@ -67,4 +72,12 @@ public class FileService {
         return filename.substring(filename.lastIndexOf("."));
     }
 
+    public FileDto handleUpload(MultipartFile file, User user) {
+        try {
+            FileEntity fileEntity = store(file, user);
+            return new FileDto(fileEntity);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

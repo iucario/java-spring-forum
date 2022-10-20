@@ -6,6 +6,7 @@ import com.demo.app.post.PostService;
 import com.demo.app.user.User;
 import com.demo.app.user.UserRepository;
 import com.demo.app.user.UserService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -46,6 +47,11 @@ public class CommentServiceTest {
         savedComment.setId(1L);
     }
 
+    @AfterEach
+    void tearDown() {
+        commentRepository.deleteAll();
+    }
+
     @Test
     void canAddComment() {
         CommentDto.CommentCreate commentCreate = new CommentDto.CommentCreate("This is comment", savedPost.getId());
@@ -53,7 +59,7 @@ public class CommentServiceTest {
         when(postRepository.findById(savedPost.getId())).thenReturn(Optional.of(savedPost));
         CommentDto comment = commentService.addComment(commentCreate, savedUser);
         verify(commentRepository).save(any(Comment.class));
-        assertEquals(savedComment.getBody(), comment.body);
+        assertEquals(commentCreate.body, comment.body);
     }
 
     @Test

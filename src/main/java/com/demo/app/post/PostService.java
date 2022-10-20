@@ -19,7 +19,7 @@ public class PostService {
     }
 
     public int countUserPosts(Long userId) {
-        return postRepository.countAll(userId);
+        return postRepository.countUserPosts(userId);
     }
 
     public Post getById(Long id) {

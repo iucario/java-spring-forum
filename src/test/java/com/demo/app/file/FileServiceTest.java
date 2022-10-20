@@ -21,7 +21,8 @@ class FileServiceTest {
     void setUp() {
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
-        fileService = new FileService(fileRepository);
+        String uploadDir = System.getProperty("java.io.tmpdir");
+        fileService = new FileService(fileRepository, uploadDir);
         savedFile = new FileEntity("testname", "url", savedUser);
     }
 

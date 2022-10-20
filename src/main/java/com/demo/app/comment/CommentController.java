@@ -30,11 +30,11 @@ public class CommentController {
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<CommentDto.CommentCreate> addComment(@RequestBody CommentDto.CommentCreate commentCreate,
-                                                               final HttpServletRequest request) {
+    public ResponseEntity<CommentDto> addComment(@RequestBody CommentDto.CommentCreate commentCreate,
+                                                 final HttpServletRequest request) {
         final User user = userService.getUser(request);
-        commentService.addComment(commentCreate, user);
-        return new ResponseEntity<>(commentCreate, HttpStatus.CREATED); // todo: response
+        CommentDto commentDto = commentService.addComment(commentCreate, user);
+        return new ResponseEntity<>(commentDto, HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
