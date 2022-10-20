@@ -8,6 +8,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class JwtFilter extends GenericFilterBean {
@@ -29,7 +30,8 @@ public class JwtFilter extends GenericFilterBean {
 
         final String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new ServletException("Missing or invalid Authorization header.");
+            handleException(res, "Missing or invalid Authorization header.");
+            return;
         }
 
         final String token = authHeader.substring(7); // The part after "Bearer "
@@ -38,10 +40,15 @@ public class JwtFilter extends GenericFilterBean {
             final Claims claims = jwtUtil.getAllClaimsFromToken(token);
             request.setAttribute("claims", claims);
         } catch (final SecurityException e) {
-            throw new ServletException("Invalid token.");
+            handleException(res, "Invalid token.");
+            return;
         }
 
         chain.doFilter(req, res);
     }
 
+    private void handleException(final ServletResponse res, String message) throws IOException {
+        final HttpServletResponse response = (HttpServletResponse) res;
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
+    }
 }
