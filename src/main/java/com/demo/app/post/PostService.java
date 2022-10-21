@@ -1,8 +1,7 @@
 package com.demo.app.post;
 
-import org.springframework.http.HttpStatus;
+import com.demo.app.exception.AppException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -14,17 +13,13 @@ public class PostService {
         this.postRepository = postRepository;
     }
 
-    public List<PostDto> getAllPosts(Long userId, int offset, int limit) {
-        return postRepository.getAll(userId, offset, limit).stream().map(PostDto::new).toList();
-    }
-
-    public int countUserPosts(Long userId) {
-        return postRepository.countUserPosts(userId);
+    public List<PostDto> getUserPosts(Long userId, int offset, int limit) {
+        return postRepository.findUserPosts(userId, offset, limit).stream().map(PostDto::new).toList();
     }
 
     public Post getById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found for id :: " + id);
+            throw new AppException.NotFoundException(String.format("Post not found for id %s", id));
         });
     }
 
@@ -38,7 +33,7 @@ public class PostService {
 
     public PostDto updatePost(PostDto.PostUpdate postUpdate) {
         Post existingPost = this.postRepository.findById(postUpdate.id).orElseThrow(() -> {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found for id :: " + postUpdate.id);
+            throw new AppException.NotFoundException(String.format("Post not found for id %s", postUpdate.id));
         });
         existingPost.setBody(postUpdate.body);
         existingPost.updateTime();

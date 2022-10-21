@@ -1,7 +1,7 @@
 package com.demo.app.comment;
 
+import com.demo.app.auth.AuthService;
 import com.demo.app.user.User;
-import com.demo.app.user.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,11 +13,11 @@ import java.util.List;
 @RequestMapping("/api/comment")
 public class CommentController {
     private final CommentService commentService;
-    private final UserService userService;
+    private final AuthService authService;
 
-    CommentController(CommentService commentService, UserService userService) {
+    CommentController(CommentService commentService, AuthService authService) {
         this.commentService = commentService;
-        this.userService = userService;
+        this.authService = authService;
     }
 
     @GetMapping(produces = "application/json")
@@ -32,21 +32,21 @@ public class CommentController {
     @PostMapping(consumes = "application/json", produces = "application/json")
     public ResponseEntity<CommentDto> addComment(@RequestBody CommentDto.CommentCreate commentCreate,
                                                  final HttpServletRequest request) {
-        final User user = userService.getUser(request);
+        final User user = authService.getUser(request);
         CommentDto commentDto = commentService.addComment(commentCreate, user);
         return new ResponseEntity<>(commentDto, HttpStatus.CREATED);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
     public ResponseEntity<String> deleteComment(@PathVariable Long id, final HttpServletRequest request) {
-        final User user = userService.getUser(request);
+        final User user = authService.getUser(request);
         return commentService.deleteComment(id, user);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
     public CommentDto updateComment(@RequestBody CommentDto.CommentUpdate commentUpdate,
                                     final HttpServletRequest request) {
-        final User user = userService.getUser(request);
+        final User user = authService.getUser(request);
         return commentService.updateComment(commentUpdate, user);
     }
 

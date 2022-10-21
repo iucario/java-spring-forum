@@ -1,5 +1,7 @@
 package com.demo.app.comment;
 
+import com.demo.app.auth.AuthService;
+import com.demo.app.auth.JwtUtil;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostRepository;
 import com.demo.app.post.PostService;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +32,10 @@ public class CommentServiceTest {
     PostRepository postRepository;
     @Mock
     UserRepository userRepository;
+    @Mock
+    AuthService authService;
+    @Autowired
+    JwtUtil jwtUtil;
     private CommentService commentService;
     private User savedUser;
     private Post savedPost;
@@ -36,7 +43,7 @@ public class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        UserService userService = new UserService(userRepository, postRepository);
+        UserService userService = new UserService(userRepository, postRepository, authService, jwtUtil);
         PostService postService = new PostService(postRepository);
         commentService = new CommentService(commentRepository, postService);
         savedUser = new User("testname", "testpassword");

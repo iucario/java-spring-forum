@@ -37,7 +37,7 @@ public class Post {
 
     @Override
     public String toString() {
-        return String.format("Post[post_id=%d, body='%s', created_at=%d, updated_at=%d, user=%s]", id,
+        return String.format("Post[post_id=%d, body=%s, created_at=%d, updated_at=%d, user=%s]", id,
                 body, createdAt, updatedAt, user.getName());
     }
 

@@ -12,7 +12,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query(value = "SELECT * FROM posts p WHERE p.user_id = :userId ORDER BY created_at DESC LIMIT :limit OFFSET " +
             ":offset",
             nativeQuery = true)
-    List<Post> getAll(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
+    List<Post> findUserPosts(@Param("userId") Long userId, @Param("offset") int offset, @Param("limit") int limit);
 
     @Query("SELECT COUNT(*) FROM Post i WHERE i.user.id = :userId")
     int countUserPosts(@Param("userId") Long userId);

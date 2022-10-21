@@ -1,8 +1,8 @@
 package com.demo.app.post;
 
+import com.demo.app.exception.AppException;
 import com.demo.app.user.User;
 import com.demo.app.user.UserRepository;
-import com.demo.app.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.jgroups.util.Util.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,14 +25,12 @@ public class PostServiceTest {
     @Mock
     PostRepository postRepository;
     private PostService postService;
-    private UserService userService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
         postService = new PostService(postRepository);
-        userService = new UserService(userRepository, postRepository);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedPost = new Post("title", "This is body", savedUser);
@@ -53,10 +52,20 @@ public class PostServiceTest {
     }
 
     @Test
-    void canGetAll() {
-        when(postRepository.getAll(1L, 0, 100)).thenReturn(List.of(savedPost));
-        List<PostDto> posts = postService.getAllPosts(1L, 0, 100);
-        verify(postRepository).getAll(1L, 0, 100);
+    void willReturnNotFound() {
+        when(postRepository.findById(1L)).thenReturn(Optional.empty());
+        Throwable exception = assertThrows(AppException.NotFoundException.class, () -> {
+            postService.getById(savedPost.getId());
+        });
+        assertEquals("Post not found for id 1", exception.getMessage());
+        verify(postRepository).findById(savedPost.getId());
+    }
+
+    @Test
+    void canGetUserPosts() {
+        when(postRepository.findUserPosts(1L, 0, 100)).thenReturn(List.of(savedPost));
+        List<PostDto> posts = postService.getUserPosts(1L, 0, 100);
+        verify(postRepository).findUserPosts(1L, 0, 100);
         assertEquals(1, posts.size());
         assertEquals(savedPost.getBody(), posts.get(0).body);
     }

@@ -75,7 +75,7 @@ public class Comment {
     }
 
     public String toString() {
-        return String.format("Comment[id=%d, body='%s', created_at='%d', updated_at='%d', user='%s']", id,
+        return String.format("Comment[id=%d, body=%s, created_at=%d, updated_at=%d, user=%s]", id,
                 body, createdAt, updatedAt, user.getName());
     }
 

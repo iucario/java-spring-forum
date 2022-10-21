@@ -1,18 +1,20 @@
 package com.demo.app.user;
 
+import com.demo.app.auth.AuthService;
+import com.demo.app.auth.JwtUtil;
+import com.demo.app.exception.AppException;
 import com.demo.app.post.PostRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
 import static org.jgroups.util.Util.assertEquals;
+import static org.jgroups.util.Util.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -24,13 +26,21 @@ class UserServiceTest {
     UserRepository userRepository;
     @Mock
     PostRepository postRepository;
+    @Mock
+    AuthService authService;
+    private JwtUtil jwtUtil;
+    private String password;
+    private String hashedPassword;
     private UserService userService;
     private User savedUser;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepository, postRepository);
-        savedUser = new User("testname", "testpassword");
+        jwtUtil = new JwtUtil("secret123456789012345678901234567890");
+        password = "testPass123!@#";
+        hashedPassword = "$2b$12$C03E3lduNya6x8TG4WAEje8nrqHd2qaqn7rDbUn9SLCnjaA7.j/GC";
+        userService = new UserService(userRepository, postRepository, authService, jwtUtil);
+        savedUser = new User("testname", hashedPassword);
         savedUser.setId(1L);
     }
 
@@ -42,11 +52,19 @@ class UserServiceTest {
 
     @Test
     void canRegister() {
-        UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "testPass123!@#");
-        ResponseEntity<String> resp = userService.register(userCreate);
+        UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
+        when(userRepository.findByName(any())).thenReturn(Optional.empty());
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        userService.register(userCreate);
         verify(userRepository).save(any());
-        assertEquals(HttpStatus.CREATED, resp.getStatusCode());
-        assertEquals("User created", resp.getBody());
+    }
+
+    @Test
+    void canLogin() {
+        UserDto.UserLogin userLogin = new UserDto.UserLogin("testname", password);
+        when(authService.authenticate("testname", password)).thenReturn(true);
+        UserDto.LoginResponse result = userService.login(userLogin);
+        assertNotNull(result);
     }
 
     @Test
@@ -57,14 +75,12 @@ class UserServiceTest {
     }
 
     @Test
-    void willReturn404() {
+    void willReturnUserNotFoundException() {
         when(userRepository.findByName(savedUser.getName())).thenReturn(Optional.empty());
-        try {
-            userService.getByName("testname");
-        } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
-            assertEquals("User not found for name :: testname", e.getReason());
-        }
+        var expected = new AppException.NotFoundException("User not found for name: testname");
+        Throwable exception = assertThrows(AppException.NotFoundException.class,
+                () -> userService.getByName("testname"));
+        assertEquals(expected.getMessage(), exception.getMessage());
         verify(userRepository).findByName("testname");
     }
 
@@ -76,9 +92,10 @@ class UserServiceTest {
     }
 
     @Test
-    void canSaveUser() {
-        userService.saveUser("testname", "testPass123!@#");
-        verify(userRepository).save(any());
+    void canGetUserInfo() {
+        when(postRepository.countUserPosts(savedUser.getId())).thenReturn(1);
+        userService.getUserInfo(savedUser);
+        verify(postRepository).countUserPosts(savedUser.getId());
     }
 
     @Test
@@ -86,5 +103,11 @@ class UserServiceTest {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
         userService.getUserProfile(savedUser.getId());
         verify(userRepository).findById(savedUser.getId());
+    }
+
+    @Test
+    void canDeleteUserById() {
+        userService.deleteUserById(savedUser.getId());
+        verify(userRepository).deleteById(savedUser.getId());
     }
 }

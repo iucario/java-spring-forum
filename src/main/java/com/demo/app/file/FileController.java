@@ -1,7 +1,7 @@
 package com.demo.app.file;
 
+import com.demo.app.auth.AuthService;
 import com.demo.app.user.User;
-import com.demo.app.user.UserService;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -16,23 +16,23 @@ import java.util.List;
 public class FileController {
 
     private final FileService fileService;
-    private final UserService userService;
+    private final AuthService authService;
 
-    FileController(FileService fileService, UserService userService) {
+    FileController(FileService fileService, AuthService authService) {
         this.fileService = fileService;
-        this.userService = userService;
+        this.authService = authService;
     }
 
     @PostMapping("/upload")
     public FileDto handleFileUpload(@RequestParam("file") MultipartFile file,
                                     final HttpServletRequest request) {
-        final User user = userService.getUser(request);
+        final User user = authService.getUser(request);
         return fileService.handleUpload(file, user);
     }
 
     @GetMapping("/list")
     public List<FileDto> getFiles(final HttpServletRequest request) {
-        User user = userService.getUser(request);
+        User user = authService.getUser(request);
         return fileService.getAllUserFiles(user.getId());
     }
 
@@ -50,7 +50,7 @@ public class FileController {
     @DeleteMapping("/delete/{filename:.+}")
     public ResponseEntity<String> handleFileDelete(@PathVariable String filename,
                                                    final HttpServletRequest request) {
-        final User user = userService.getUser(request);
+        final User user = authService.getUser(request);
         try {
             fileService.delete(filename, user);
             return ResponseEntity.ok("file deleted");

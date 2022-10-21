@@ -1,25 +1,27 @@
 package com.demo.app.user;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.demo.app.auth.AuthService;
+import com.demo.app.auth.JwtUtil;
+import com.demo.app.exception.AppException;
 import com.demo.app.post.PostRepository;
-import io.jsonwebtoken.Claims;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PostRepository postRepository) {
+    public UserService(UserRepository userRepository, PostRepository postRepository, AuthService authService,
+                       JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
     }
 
     private static String hashPassword(String password) {
@@ -32,15 +34,13 @@ public class UserService {
     }
 
     public User getByName(String name) {
-        Optional<User> user = userRepository.findByName(name.toLowerCase());
-        return user.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "User not found for name :: " + name));
+        return userRepository.findByName(name.toLowerCase()).orElseThrow(() ->
+                new AppException.NotFoundException(String.format("User not found for name: %s", name)));
     }
 
     public User getById(Long id) {
-        Optional<User> user = userRepository.findById(id);
-        return user.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "User not found for id :: " + id));
+        return userRepository.findById(id).orElseThrow(() ->
+                new AppException.NotFoundException(String.format("User not found for id: %d", id)));
     }
 
     public UserDto getUserProfile(Long id) {
@@ -49,26 +49,16 @@ public class UserService {
         return new UserDto(user, totalPosts);
     }
 
-    public void saveUser(String name, String password) {
-        if (userRepository.findByName(name).isPresent()) {
-            throw new RuntimeException("User already exists");
+    public UserDto register(UserDto.UserCreate userCreate) {
+        if (userRepository.findByName(userCreate.name).isPresent()) {
+            throw new AppException.UserExistsException(String.format("User already exists: %s", userCreate.name));
         }
-        String hashedPassword = hashPassword(password);
-        User user = new User(name, hashedPassword);
-        userRepository.save(user);
+        String hashedPassword = hashPassword(userCreate.password);
+        User user = new User(userCreate.name, hashedPassword);
+        return new UserDto(userRepository.save(user), 0);
     }
 
-    public ResponseEntity<String> register(UserDto.UserCreate user) {
-        if (isUserNameExists(user.name)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("User already exists");
-        }
-        saveUser(user.name, user.password);
-        return ResponseEntity.status(HttpStatus.CREATED).body("User created");
-    }
-
-    public UserDto getUserInfo(HttpServletRequest request) {
-        final Claims claims = (Claims) request.getAttribute("claims");
-        final User user = getByName(claims.get("sub", String.class));
+    public UserDto getUserInfo(User user) {
         int totalPosts = postRepository.countUserPosts(user.getId());
         return new UserDto(user, totalPosts);
     }
@@ -77,25 +67,11 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public Boolean authenticate(String name, String password) {
-        User user = userRepository.findByName(name).orElse(null);
-        if (user == null) {
-            return false;
+    public UserDto.LoginResponse login(UserDto.UserLogin login) {
+        if (!authService.authenticate(login.name, login.password)) {
+            throw new AppException.UnauthorizedException("Invalid username or password");
         }
-        BCrypt.Result result = BCrypt.verifyer().verify(password.toCharArray(), user.getHashedPassword());
-        return result.verified;
+        return new UserDto.LoginResponse(jwtUtil.generateToken(login.name));
     }
 
-    public User getUser(HttpServletRequest request) {
-        final Claims claims = (Claims) request.getAttribute("claims");
-        try {
-            return getByName(claims.get("sub", String.class));
-        } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token");
-        }
-    }
-
-    private Boolean isUserNameExists(String name) {
-        return userRepository.findByName(name).isPresent();
-    }
 }

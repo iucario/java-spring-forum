@@ -24,8 +24,7 @@ public class CommentDto {
 
     @Override
     public String toString() {
-        return String.format("CommentDto[id=%d, body=%s post_id=%d username=%s created_at=%d, " +
-                        "updated_at='%d']", id,
+        return String.format("CommentDto[id=%d, body=%s, post_id=%d, username=%s, created_at=%d, updated_at=%d]", id,
                 body, postId, username, createdAt, updatedAt);
     }
 
@@ -41,7 +40,7 @@ public class CommentDto {
 
         @Override
         public String toString() {
-            return String.format("CommentCreate[id=%d, body=%s post_id=%d]", id, body, postId);
+            return String.format("CommentCreate[id=%d, body=%s, post_id=%d]", id, body, postId);
         }
     }
 
@@ -56,7 +55,7 @@ public class CommentDto {
 
         @Override
         public String toString() {
-            return "CommentUpdate[body=" + body + ", id=" + id + "]";
+            return String.format("CommentUpdate[body=%s, id=%s]", body, id);
         }
     }
 }

@@ -37,8 +37,8 @@ class PostRepositoryTest {
     }
 
     @Test
-    void getAll() {
-        List<Post> posts = postRepository.getAll(savedUser.getId(), 0, 100);
+    void canFindUserPosts() {
+        List<Post> posts = postRepository.findUserPosts(savedUser.getId(), 0, 100);
         assertEquals(1, posts.size());
     }
 

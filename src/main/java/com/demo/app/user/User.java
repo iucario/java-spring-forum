@@ -57,15 +57,7 @@ public class User {
         return hashedPassword;
     }
 
-    public void setHashedPassword(String hashedPassword) {
-        this.hashedPassword = hashedPassword;
-    }
-
     public Long getCreatedAt() {
         return createdAt;
-    }
-
-    public void setCreatedAt(Long createdAt) {
-        this.createdAt = createdAt;
     }
 }

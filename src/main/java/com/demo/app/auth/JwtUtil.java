@@ -3,7 +3,6 @@ package com.demo.app.auth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -23,7 +22,6 @@ public class JwtUtil implements Serializable {
 
     private final String secret;
 
-    @Autowired
     public JwtUtil(@Value("${jwt.secret}") String secret) {
         this.secret = secret;
     }
