@@ -1,6 +1,7 @@
 package com.demo.app.user;
 
 import com.demo.app.post.Post;
+import com.demo.app.user.userStats.UserStats;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -20,8 +21,14 @@ public class User {
     @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<Post> posts;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private Set<Post> comments;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserStats userStats;
 
     public User() {
     }
