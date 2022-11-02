@@ -39,7 +39,7 @@ public class JwtFilter extends GenericFilterBean {
         try {
             final Claims claims = jwtUtil.getAllClaimsFromToken(token);
             request.setAttribute("claims", claims);
-        } catch (final SecurityException e) {
+        } catch (final Exception e) {
             handleException(res, "Invalid token.");
             return;
         }
