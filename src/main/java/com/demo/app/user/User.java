@@ -67,4 +67,12 @@ public class User {
     public Long getCreatedAt() {
         return createdAt;
     }
+
+    public UserStats getUserStats() {
+        return userStats;
+    }
+
+    public void setUserStats(UserStats userStats) {
+        this.userStats = userStats;
+    }
 }

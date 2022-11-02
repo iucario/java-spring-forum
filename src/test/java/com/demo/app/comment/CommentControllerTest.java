@@ -4,6 +4,8 @@ import com.demo.app.auth.AuthService;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
+import com.demo.app.user.UserDto;
+import com.demo.app.user.userStats.UserStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +40,7 @@ class CommentControllerTest {
     private Comment savedComment;
     private Post savedPost;
     private User savedUser;
+    private UserDto author;
 
     @BeforeEach
     void setUp() {
@@ -47,11 +50,12 @@ class CommentControllerTest {
         savedPost.setId(1L);
         savedComment = new Comment("content", savedPost, savedUser);
         savedComment.setId(1L);
+        author = new UserDto(savedUser, new UserStats(savedUser));
     }
 
     @Test
     void canGetComments() throws Exception {
-        List<CommentDto> result = List.of(new CommentDto(savedComment));
+        List<CommentDto> result = List.of(new CommentDto(savedComment, author));
         when(authService.getUser(any())).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
         when(commentService.getByPostId(1L)).thenReturn(result);
@@ -67,8 +71,7 @@ class CommentControllerTest {
 
     @Test
     void canAddComment() throws Exception {
-        CommentDto.CommentCreate commentCreate = new CommentDto.CommentCreate("content", 1L);
-        CommentDto result = new CommentDto(savedComment);
+        CommentDto result = new CommentDto(savedComment, author);
         when(authService.getUser(any())).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
         when(commentService.addComment(any(), eq(savedUser))).thenReturn(result);
@@ -93,8 +96,7 @@ class CommentControllerTest {
 
     @Test
     void canUpdateComment() throws Exception {
-        CommentDto result = new ResponseEntity<>(new CommentDto(savedComment), null, 200).getBody();
-        CommentDto.CommentUpdate commentUpdate = new CommentDto.CommentUpdate(1L, "content");
+        CommentDto result = new ResponseEntity<>(new CommentDto(savedComment, author), null, 200).getBody();
         when(authService.getUser(any())).thenReturn(savedUser);
         when(commentService.updateComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(put("/api/comment")

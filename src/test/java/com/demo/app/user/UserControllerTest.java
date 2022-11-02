@@ -1,6 +1,7 @@
 package com.demo.app.user;
 
 import com.demo.app.auth.AuthService;
+import com.demo.app.user.userStats.UserStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,11 +31,13 @@ class UserControllerTest {
     @Autowired
     ObjectMapper objectMapper;
     private User savedUser;
+    private UserStats userStats;
 
     @BeforeEach
     void setUp() {
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
+        userStats = new UserStats(savedUser);
     }
 
     @Test
@@ -64,7 +67,7 @@ class UserControllerTest {
     @Test
     void canRegister() throws Exception {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "Greatpassword1!");
-        UserDto result = new UserDto(savedUser, 0);
+        UserDto result = new UserDto(savedUser, userStats);
         when(userService.createUser(userCreate)).thenReturn(result);
         mockMvc.perform(post("/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,18 +86,18 @@ class UserControllerTest {
 
     @Test
     void canGetMe() throws Exception {
-        UserDto result = new UserDto(savedUser, 1);
+        UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserInfo(any())).thenReturn(result);
         mockMvc.perform(get("/user/me")
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", Matchers.is("testname")))
-                .andExpect(jsonPath("$.totalPosts", Matchers.is(1)));
+                .andExpect(jsonPath("$.postCount", Matchers.is(0)));
     }
 
     @Test
     void canGetUserProfile() throws Exception {
-        UserDto result = new UserDto(savedUser, 1);
+        UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserProfile(any())).thenReturn(result);
         mockMvc.perform(get("/user/profile/1")
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))

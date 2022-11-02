@@ -2,7 +2,7 @@ package com.demo.app.post;
 
 import com.demo.app.exception.AppException;
 import com.demo.app.user.User;
-import com.demo.app.user.UserRepository;
+import com.demo.app.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,16 +21,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
     @Mock
-    UserRepository userRepository;
-    @Mock
     PostRepository postRepository;
+    @Mock
+    UserService userService;
     private PostService postService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository);
+        postService = new PostService(postRepository, userService);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedPost = new Post("title", "This is body", savedUser);
@@ -40,7 +40,7 @@ public class PostServiceTest {
     @Test
     void canAddPost() {
         when(postRepository.save(any(Post.class))).thenReturn(savedPost);
-        postService.addPost(savedPost);
+        postService.addPost(savedPost, savedUser);
         verify(postRepository).save(any(Post.class));
     }
 
@@ -82,7 +82,7 @@ public class PostServiceTest {
         when(postRepository.findById(savedPost.getId())).thenReturn(Optional.ofNullable(savedPost));
         savedPost.setBody(postUpdate.body);
         when(postRepository.save(any(Post.class))).thenReturn(savedPost);
-        PostDto updatedPost = postService.updatePost(postUpdate);
+        PostDto updatedPost = postService.updatePost(postUpdate, savedUser);
         assertEquals("updated body", updatedPost.body);
     }
 }

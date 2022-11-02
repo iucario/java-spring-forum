@@ -2,6 +2,8 @@ package com.demo.app.post;
 
 import com.demo.app.auth.AuthService;
 import com.demo.app.user.User;
+import com.demo.app.user.UserDto;
+import com.demo.app.user.userStats.UserStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,13 +13,13 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(PostController.class)
 class PostControllerTest {
@@ -31,6 +33,8 @@ class PostControllerTest {
     PostService postService;
     private Post savedPost;
     private User savedUser;
+    private UserStats userStats;
+    private UserDto author;
 
     @BeforeEach
     void setUp() {
@@ -38,56 +42,58 @@ class PostControllerTest {
         savedUser.setId(1L);
         savedPost = new Post("title", "content", savedUser);
         savedPost.setId(1L);
+        userStats = new UserStats(savedUser);
+        author = new UserDto(savedUser, userStats);
     }
 
     @Test
-    void canGetAllPosts() throws Exception {
-        List<PostDto> result = List.of(new PostDto(savedPost));
+    void canGetUserPosts() throws Exception {
+        List<PostDto> result = List.of(new PostDto(savedPost, author));
         when(postService.getUserPosts(1L, 0, 100)).thenReturn(result);
         when(authService.getUser(any())).thenReturn(savedUser);
         mockMvc.perform(get("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .param("offset", "0")
                         .param("limit", "100"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].id", Matchers.is(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].title", Matchers.is("title")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].body", Matchers.is("content")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id", Matchers.is(1)))
+                .andExpect(jsonPath("$[0].title", Matchers.is("title")))
+                .andExpect(jsonPath("$[0].body", Matchers.is("content")));
     }
 
     @Test
     void canAddNewPost() throws Exception {
-        PostDto result = new PostDto(savedPost);
+        PostDto result = new PostDto(savedPost, author);
         PostDto.PostCreate postCreate = new PostDto.PostCreate("title", "content");
-        when(postService.addPost(any())).thenReturn(result);
+        when(postService.addPost(any(), any())).thenReturn(result);
         when(authService.getUser(any())).thenReturn(savedUser);
         mockMvc.perform(post("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postCreate)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("title")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.body", Matchers.is("content")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", Matchers.is(1)))
+                .andExpect(jsonPath("$.title", Matchers.is("title")))
+                .andExpect(jsonPath("$.body", Matchers.is("content")));
     }
 
     @Test
     void canUpdatePost() throws Exception {
-        PostDto result = new PostDto(savedPost);
+        PostDto result = new PostDto(savedPost, author);
         result.body = "body";
         PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("body", 1L);
         when(postService.getById(1L)).thenReturn(savedPost);
-        when(postService.updatePost(any())).thenReturn(result);
+        when(postService.updatePost(any(), any())).thenReturn(result);
         when(authService.getUser(any())).thenReturn(savedUser);
         mockMvc.perform(put("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postUpdate)))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.id", Matchers.is(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.title", Matchers.is("title")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.body", Matchers.is("body")))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.userId", Matchers.is(1)));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", Matchers.is(1)))
+                .andExpect(jsonPath("$.title", Matchers.is("title")))
+                .andExpect(jsonPath("$.body", Matchers.is("body")))
+                .andExpect(jsonPath("$.author.id", Matchers.is(1)));
     }
 
     @Test
@@ -96,8 +102,8 @@ class PostControllerTest {
         when(postService.getById(1L)).thenReturn(savedPost);
         mockMvc.perform(delete("/api/post/" + savedPost.getId())
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("Deleted 1"));
+                .andExpect(status().isOk())
+                .andExpect(content().string("Deleted 1"));
     }
 
     @Test
@@ -108,12 +114,12 @@ class PostControllerTest {
         when(postService.getById(1L)).thenReturn(savedPost);
         mockMvc.perform(delete("/api/post/" + savedPost.getId())
                         .requestAttr("claims", "{\"sub\":\"othername\"}"))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(status().isUnauthorized());
 
         mockMvc.perform(put("/api/post")
                         .requestAttr("claims", "{\"sub\":\"othername\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(new PostDto.PostUpdate("new body", 1L))))
-                .andExpect(MockMvcResultMatchers.status().isUnauthorized());
+                .andExpect(status().isUnauthorized());
     }
 }

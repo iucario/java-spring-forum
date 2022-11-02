@@ -3,6 +3,9 @@ package com.demo.app.comment;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
+import com.demo.app.user.UserDto;
+import com.demo.app.user.UserService;
+import com.demo.app.user.userStats.UserStats;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,10 +17,12 @@ import java.util.List;
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
+    private final UserService userService;
 
-    public CommentService(CommentRepository commentRepository, PostService postService) {
+    public CommentService(CommentRepository commentRepository, PostService postService, UserService userService) {
         this.commentRepository = commentRepository;
         this.postService = postService;
+        this.userService = userService;
     }
 
     public Comment getById(Long id) {
@@ -26,8 +31,26 @@ public class CommentService {
         });
     }
 
+    public UserDto getPostAuthor(Long postId) {
+        User user = userService.getById(postService.getById(postId).getUser().getId());
+        return new UserDto(user, new UserStats(user));
+    }
+
+    UserDto getCommentAuthor(Long commentId) {
+        User user = getById(commentId).getUser();
+        return new UserDto(user, new UserStats(user));
+    }
+
+    private CommentDto createCommentDto(Comment comment) {
+        UserDto author = getCommentAuthor(comment.getId());
+        return new CommentDto(comment, author);
+    }
+
     public List<CommentDto> getByPostId(Long postId) {
-        return commentRepository.findByPostId(postId).stream().map(CommentDto::new).toList();
+        return commentRepository.findByPostId(postId)
+                .stream()
+                .map((this::createCommentDto))
+                .toList();
     }
 
     public List<Comment> getByUserId(Long userId) {
@@ -38,14 +61,19 @@ public class CommentService {
         return commentRepository.findByUserName(name);
     }
 
-    public List<CommentDto> getByPostAndUser(Long itemId, Long userId) {
-        return commentRepository.findByPostAndUser(itemId, userId).stream().map(CommentDto::new).toList();
+    public List<CommentDto> getByPostAndUser(Long postId, Long userId) {
+        UserDto author = userService.getUserProfile(userId);
+        return commentRepository.findByPostAndUser(postId, userId)
+                .stream()
+                .map((comment -> new CommentDto(comment, author)))
+                .toList();
     }
 
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
-        return new CommentDto(comment);
+        UserDto author = new UserDto(user, new UserStats(user));
+        return new CommentDto(comment, author);
     }
 
     public ResponseEntity<String> deleteComment(Long id, User user) {
@@ -66,6 +94,7 @@ public class CommentService {
         }
         comment.setBody(commentUpdate.body);
         comment.updateTime();
-        return new CommentDto(commentRepository.save(comment));
+        UserDto author = new UserDto(user, new UserStats(user));
+        return new CommentDto(commentRepository.save(comment), author);
     }
 }

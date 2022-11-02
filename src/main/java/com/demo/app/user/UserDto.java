@@ -1,5 +1,6 @@
 package com.demo.app.user;
 
+import com.demo.app.user.userStats.UserStats;
 import org.springframework.lang.NonNull;
 
 import javax.validation.constraints.Pattern;
@@ -9,13 +10,17 @@ public class UserDto {
     public Long id;
     public String name;
     public Long createdAt;
-    public int totalPosts;
+    public Long postCount;
+    public Long commentCount;
+    public Long fileCount;
 
-    public UserDto(final User user, int totalPosts) {
+    public UserDto(final User user, final UserStats userStats) {
         this.id = user.getId();
         this.name = user.getName();
         this.createdAt = user.getCreatedAt();
-        this.totalPosts = totalPosts;
+        this.postCount = userStats.getPostCount();
+        this.commentCount = userStats.getCommentCount();
+        this.fileCount = userStats.getFileCount();
     }
 
     public static class UserLogin {

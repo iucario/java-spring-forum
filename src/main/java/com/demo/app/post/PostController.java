@@ -34,7 +34,7 @@ public class PostController {
     public PostDto addNewPost(@RequestBody PostDto.PostCreate postCreate, final HttpServletRequest request) {
         final User user = authService.getUser(request);
         Post post = new Post(postCreate.title, postCreate.body, user);
-        return postService.addPost(post);
+        return postService.addPost(post, user);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
@@ -44,7 +44,7 @@ public class PostController {
         if (!user.getId().equals(post.getUser().getId())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        return postService.updatePost(postUpdate);
+        return postService.updatePost(postUpdate, user);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")

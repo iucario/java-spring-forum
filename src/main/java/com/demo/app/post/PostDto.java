@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.user.UserDto;
 import org.springframework.lang.NonNull;
 
 public class PostDto {
@@ -8,23 +9,21 @@ public class PostDto {
     public String body;
     public Long createdAt;
     public Long updatedAt;
-    public Long userId;
-    public String userName;
+    public UserDto author;
 
-    public PostDto(Post post) {
+    public PostDto(Post post, UserDto author) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.body = post.getBody();
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
-        this.userId = post.getUser().getId();
-        this.userName = post.getUser().getName();
+        this.author = author;
     }
 
     @Override
     public String toString() {
-        return String.format("PostDto[id=%d, title='%s' body=%s created_at='%d', updated_at='%d']", id,
-                title, body, createdAt, updatedAt);
+        return String.format("PostDto[id=%d, title=%s body=%s created_at=%d, updated_at=%d, author=%s]", id,
+                title, body, createdAt, updatedAt, author.name);
     }
 
     public static class PostCreate {
@@ -38,7 +37,7 @@ public class PostDto {
 
         @Override
         public String toString() {
-            return "PostCreate[title=" + title + ", body=" + body + "]";
+            return String.format("PostCreate[title=%s, body=%s]", title, body);
         }
     }
 
@@ -55,7 +54,7 @@ public class PostDto {
 
         @Override
         public String toString() {
-            return "PostUpdate[body=" + body + ", id=" + id + "]";
+            return String.format("PostUpdate[body=%s, id=%d]", body, id);
         }
     }
 }

@@ -5,7 +5,9 @@ import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.exception.AppException.UserExistsException;
 import com.demo.app.post.PostRepository;
+import com.demo.app.user.userStats.UserStats;
 import com.demo.app.user.userStats.UserStatsRepository;
+import com.demo.app.user.userStats.UserStatsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,20 +34,24 @@ class UserServiceTest {
     UserStatsRepository userStatsRepository;
     @Mock
     AuthService authService;
+    @Mock
+    UserStatsService userStatsService;
     private JwtUtil jwtUtil;
     private String password;
     private String hashedPassword;
     private UserService userService;
     private User savedUser;
+    private UserStats userStats;
 
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil("secret123456789012345678901234567890");
         password = "testPass123!@#";
         hashedPassword = "$2b$12$C03E3lduNya6x8TG4WAEje8nrqHd2qaqn7rDbUn9SLCnjaA7.j/GC";
-        userService = new UserService(userRepository, postRepository, userStatsRepository, authService, jwtUtil);
+        userService = new UserService(userRepository, userStatsService, authService, jwtUtil);
         savedUser = new User("testname", hashedPassword);
         savedUser.setId(1L);
+        userStats = new UserStats(savedUser);
     }
 
     @Test
@@ -59,6 +65,7 @@ class UserServiceTest {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
         when(userRepository.findByName(any())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
+        when(userStatsService.save(any(UserStats.class))).thenReturn(userStats);
         userService.createUser(userCreate);
         verify(userRepository).save(any());
     }
@@ -104,15 +111,17 @@ class UserServiceTest {
 
     @Test
     void canGetUserInfo() {
-        when(postRepository.countUserPosts(savedUser.getId())).thenReturn(1);
+        when(userStatsService.getUserStats(savedUser.getId())).thenReturn(userStats);
         userService.getUserInfo(savedUser);
-        verify(postRepository).countUserPosts(savedUser.getId());
+        verify(userStatsService).getUserStats(savedUser.getId());
     }
 
     @Test
     void canGetUserProfile() {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
+        when(userStatsService.getUserStats(savedUser.getId())).thenReturn(userStats);
         userService.getUserProfile(savedUser.getId());
+        verify(userStatsService).getUserStats(savedUser.getId());
         verify(userRepository).findById(savedUser.getId());
     }
 

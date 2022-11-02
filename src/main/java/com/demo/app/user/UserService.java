@@ -4,27 +4,24 @@ import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.demo.app.auth.AuthService;
 import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
-import com.demo.app.post.PostRepository;
 import com.demo.app.user.userStats.UserStats;
-import com.demo.app.user.userStats.UserStatsRepository;
+import com.demo.app.user.userStats.UserStatsService;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
 public class UserService {
     private final UserRepository userRepository;
-    private final PostRepository postRepository;
-    private final UserStatsRepository userStatsRepository;
+    private final UserStatsService userStatsService;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PostRepository postRepository,
-                       UserStatsRepository userStatsRepository, AuthService authService,
+    public UserService(UserRepository userRepository, UserStatsService userStatsService, AuthService authService,
                        JwtUtil jwtUtil) {
         this.userRepository = userRepository;
-        this.postRepository = postRepository;
-        this.userStatsRepository = userStatsRepository;
+        this.userStatsService = userStatsService;
         this.authService = authService;
         this.jwtUtil = jwtUtil;
     }
@@ -50,10 +47,11 @@ public class UserService {
 
     public UserDto getUserProfile(Long id) {
         User user = getById(id);
-        int totalPosts = postRepository.countUserPosts(id);
-        return new UserDto(user, totalPosts);
+        UserStats userStats = userStatsService.getUserStats(id);
+        return new UserDto(user, userStats);
     }
 
+    @Transactional
     public UserDto createUser(UserDto.UserCreate userCreate) {
         if (userRepository.findByName(userCreate.name).isPresent()) {
             throw new AppException.UserExistsException(String.format("User already exists: %s", userCreate.name));
@@ -61,14 +59,13 @@ public class UserService {
         String hashedPassword = hashPassword(userCreate.password);
         User user = new User(userCreate.name, hashedPassword);
         User saved = userRepository.save(user);
-        UserStats userStats = new UserStats(user);
-        userStatsRepository.save(userStats);
-        return new UserDto(saved, 0);
+        UserStats userStats = userStatsService.save(new UserStats(saved));
+        return new UserDto(saved, userStats);
     }
 
     public UserDto getUserInfo(User user) {
-        int totalPosts = postRepository.countUserPosts(user.getId());
-        return new UserDto(user, totalPosts);
+        UserStats userStats = userStatsService.getUserStats(user.getId());
+        return new UserDto(user, userStats);
     }
 
     public void deleteUserById(Long id) {

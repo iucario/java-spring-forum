@@ -1,21 +1,17 @@
 package com.demo.app.comment;
 
-import com.demo.app.auth.AuthService;
-import com.demo.app.auth.JwtUtil;
 import com.demo.app.post.Post;
-import com.demo.app.post.PostRepository;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
-import com.demo.app.user.UserRepository;
+import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
-import com.demo.app.user.userStats.UserStatsRepository;
+import com.demo.app.user.userStats.UserStats;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,32 +26,25 @@ public class CommentServiceTest {
     @Mock
     CommentRepository commentRepository;
     @Mock
-    PostRepository postRepository;
+    UserService userService;
     @Mock
-    UserRepository userRepository;
-    @Mock
-    UserStatsRepository userStatsRepository;
-    @Mock
-    AuthService authService;
-    @Autowired
-    JwtUtil jwtUtil;
+    PostService postService;
     private CommentService commentService;
     private User savedUser;
     private Post savedPost;
     private Comment savedComment;
+    private UserDto savedAuthor;
 
     @BeforeEach
     void setUp() {
-        UserService userService = new UserService(userRepository, postRepository, userStatsRepository, authService,
-                jwtUtil);
-        PostService postService = new PostService(postRepository);
-        commentService = new CommentService(commentRepository, postService);
+        commentService = new CommentService(commentRepository, postService, userService);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
         savedComment = new Comment("This is comment", savedPost, savedUser);
         savedComment.setId(1L);
+        savedAuthor = new UserDto(savedUser, new UserStats(savedUser));
     }
 
     @AfterEach
@@ -64,10 +53,18 @@ public class CommentServiceTest {
     }
 
     @Test
+    void canGetCommentAuthor() {
+        when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
+        UserDto user = commentService.getCommentAuthor(savedComment.getId());
+        verify(commentRepository).findById(savedComment.getId());
+        assertEquals(savedUser.getName(), user.name);
+    }
+
+    @Test
     void canAddComment() {
         CommentDto.CommentCreate commentCreate = new CommentDto.CommentCreate("This is comment", savedPost.getId());
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
-        when(postRepository.findById(savedPost.getId())).thenReturn(Optional.of(savedPost));
+        when(postService.getById(savedPost.getId())).thenReturn(savedPost);
         CommentDto comment = commentService.addComment(commentCreate, savedUser);
         verify(commentRepository).save(any(Comment.class));
         assertEquals(commentCreate.body, comment.body);
@@ -86,12 +83,15 @@ public class CommentServiceTest {
     @Test
     void canGetByPostId() {
         when(commentRepository.findByPostId(savedPost.getId())).thenReturn(List.of(savedComment));
+        when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
         commentService.getByPostId(savedPost.getId());
         verify(commentRepository).findByPostId(savedPost.getId());
+        verify(commentRepository).findById(savedComment.getId());
     }
 
     @Test
     void canGetByPostAndUser() {
+        when(userService.getUserProfile(savedUser.getId())).thenReturn(savedAuthor);
         when(commentRepository.findByPostAndUser(savedPost.getId(), savedUser.getId())).thenReturn(List.of(savedComment));
         commentService.getByPostAndUser(savedPost.getId(), savedUser.getId());
         verify(commentRepository).findByPostAndUser(savedPost.getId(), savedUser.getId());

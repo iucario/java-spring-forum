@@ -46,7 +46,7 @@
               "    pm.response.to.have.status(201);\r",
               "});\r",
               "pm.test(\"Has keys\", function () {\r",
-              "    pm.expect(pm.response.json()).to.have.keys('id', 'name', 'createdAt', 'totalPosts')\r",
+              "    pm.expect(pm.response.json()).to.have.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount')\r",
               "});"
             ],
             "type": "text/javascript"
@@ -119,10 +119,6 @@
               "value": "Access-Control-Request-Headers"
             },
             {
-              "key": "Location",
-              "value": "/user/register"
-            },
-            {
               "key": "X-Content-Type-Options",
               "value": "nosniff"
             },
@@ -156,7 +152,7 @@
             },
             {
               "key": "Date",
-              "value": "Fri, 21 Oct 2022 11:36:10 GMT"
+              "value": "Wed, 02 Nov 2022 12:21:14 GMT"
             },
             {
               "key": "Keep-Alive",
@@ -168,7 +164,7 @@
             }
           ],
           "cookie": [],
-          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1666352170580,\n    \"totalPosts\": 0\n}"
+          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1667391674015,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
         }
       ]
     },
@@ -284,12 +280,12 @@
               "value": "application/json"
             },
             {
-              "key": "Content-Length",
-              "value": "19"
+              "key": "Transfer-Encoding",
+              "value": "chunked"
             },
             {
               "key": "Date",
-              "value": "Thu, 20 Oct 2022 02:44:05 GMT"
+              "value": "Wed, 02 Nov 2022 12:21:28 GMT"
             },
             {
               "key": "Keep-Alive",
@@ -301,7 +297,7 @@
             }
           ],
           "cookie": [],
-          "body": "{\"timestamp\":\"2022-10-21T10:49:28.871+00:00\",\"status\":409,\"error\":\"Conflict\",\"path\":\"/user/register\"}"
+          "body": "{\n    \"timestamp\": \"2022-11-02T12:21:28.597+00:00\",\n    \"status\": 409,\n    \"error\": \"Conflict\",\n    \"path\": \"/user/register\"\n}"
         }
       ]
     },
@@ -403,7 +399,7 @@
               "});\r",
               "pm.test(\"Have keys\", function () {\r",
               "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'totalPosts');\r",
+              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
               "    pm.collectionVariables.set(\"totalPosts\", jsonData.totalItem);\r",
               "    pm.collectionVariables.set('userId', jsonData.id);\r",
               "});"
@@ -426,7 +422,88 @@
           ]
         }
       },
-      "response": []
+      "response": [
+        {
+          "name": "user/me",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/user/me",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 12:21:54 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1667391674015,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
     },
     {
       "name": "user/me without auth",
@@ -464,6 +541,60 @@
       "response": []
     },
     {
+      "name": "user/me token expired",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhZG1pbiIsImlhdCI6MTY2NjM2NDczNCwiZXhwIjoxNjY2OTY5NTM0fQ.i-yfgqRhpIKPOxmMeYFHJ53KfBEYr58a6Ri-Elzg9f3NK0N2XJIUKjI1J3yhy1re3xFvQQLA8bmVZslMy1nihg",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"admin\",\r\n    \"password\": \"Password111!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/user/me",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "me"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "user profile",
       "event": [
         {
@@ -473,10 +604,10 @@
               "pm.test(\"Status code is 200\", function () {\r",
               "    pm.response.to.have.status(200);\r",
               "});\r",
-              "pm.test(\"Keys: id, name, createdAt, totalPosts\", function () {\r",
+              "pm.test(\"Have keys\", function () {\r",
               "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'totalPosts');\r",
-              "    pm.collectionVariables.set(\"totalPosts\", jsonData.totalItem);\r",
+              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
+              "    pm.collectionVariables.set(\"postCount\", jsonData.totalItem);\r",
               "});"
             ],
             "type": "text/javascript"
@@ -498,7 +629,89 @@
           ]
         }
       },
-      "response": []
+      "response": [
+        {
+          "name": "user profile",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/user/profile/{{userId}}",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "profile",
+                "{{userId}}"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 12:23:34 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1667391674015,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
     },
     {
       "name": "post  add",
@@ -517,7 +730,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'userId', 'userName')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
               "})\r",
               ""
             ],
@@ -548,7 +761,97 @@
           ]
         }
       },
-      "response": []
+      "response": [
+        {
+          "name": "post  add",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"title\": \"Hello World\",\r\n    \"body\": \"changed to public\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/post",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "post"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 12:24:10 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 2,\n    \"title\": \"Hello World\",\n    \"body\": \"changed to public\",\n    \"createdAt\": 1667391850317,\n    \"updatedAt\": 1667391850317,\n    \"author\": {\n        \"id\": 1,\n        \"name\": \"admin\",\n        \"createdAt\": 1667391674015,\n        \"postCount\": 0,\n        \"commentCount\": 0,\n        \"fileCount\": 0\n    }\n}"
+        }
+      ]
     },
     {
       "name": "post  add another",
@@ -566,7 +869,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'userId', 'userName')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
               "})\r",
               ""
             ],
@@ -653,7 +956,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'userId', 'userName')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
               "})\r",
               "pm.test(\"Time updated\", () => {\r",
               "    let data = pm.response.json()\r",
@@ -768,7 +1071,98 @@
           ]
         }
       },
-      "response": []
+      "response": [
+        {
+          "name": "file upload",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "Demo Diagram.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{host}}/file/upload",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "file",
+                "upload"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 04:54:56 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"name\": \"07cd394a-6748-490a-abbc-9d118f3830e7.png\",\n    \"url\": \"/file/filename/07cd394a-6748-490a-abbc-9d118f3830e7.png\",\n    \"createdAt\": 1667364896260,\n    \"username\": \"admin\"\n}"
+        }
+      ]
     },
     {
       "name": "file list",
@@ -892,7 +1286,7 @@
               "\r",
               "pm.test(\"Has keys\", () => {\r",
               "    const data = pm.response.json()\r",
-              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'username', 'userId')\r",
+              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
               "})"
             ],
             "type": "text/javascript"
@@ -984,6 +1378,11 @@
               "pm.test('Time updated', () => {\r",
               "    const data = pm.response.json()\r",
               "    pm.expect(data.updatedAt).to.be.greaterThan(data.createdAt)\r",
+              "})\r",
+              "\r",
+              "pm.test(\"Has keys\", () => {\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
               "})"
             ],
             "type": "text/javascript"
@@ -1116,6 +1515,10 @@
     },
     {
       "key": "filename",
+      "value": ""
+    },
+    {
+      "key": "postCount",
       "value": ""
     }
   ]

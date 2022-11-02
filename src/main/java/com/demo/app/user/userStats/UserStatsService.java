@@ -15,4 +15,8 @@ public class UserStatsService {
         return userStatsRepository.findByUserId(userId)
                 .orElseThrow(() -> new AppException.NotFoundException("UserStats not found for user with id: " + userId));
     }
+
+    public UserStats save(UserStats userStats) {
+        return userStatsRepository.save(userStats);
+    }
 }

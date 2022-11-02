@@ -22,7 +22,6 @@ class UserStatsRepositoryTest {
     @BeforeEach
     void setUp() {
         savedUser = new User("testname", "testpassword");
-        savedUser.setId(1L);
         userRepository.save(savedUser);
         savedUserStats = new UserStats(savedUser);
         userStatsRepository.save(savedUserStats);
