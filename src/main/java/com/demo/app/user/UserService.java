@@ -5,6 +5,8 @@ import com.demo.app.auth.AuthService;
 import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.post.PostRepository;
+import com.demo.app.user.userStats.UserStats;
+import com.demo.app.user.userStats.UserStatsRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,13 +15,16 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+    private final UserStatsRepository userStatsRepository;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, PostRepository postRepository, AuthService authService,
+    public UserService(UserRepository userRepository, PostRepository postRepository,
+                       UserStatsRepository userStatsRepository, AuthService authService,
                        JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
+        this.userStatsRepository = userStatsRepository;
         this.authService = authService;
         this.jwtUtil = jwtUtil;
     }
@@ -49,13 +54,16 @@ public class UserService {
         return new UserDto(user, totalPosts);
     }
 
-    public UserDto register(UserDto.UserCreate userCreate) {
+    public UserDto createUser(UserDto.UserCreate userCreate) {
         if (userRepository.findByName(userCreate.name).isPresent()) {
             throw new AppException.UserExistsException(String.format("User already exists: %s", userCreate.name));
         }
         String hashedPassword = hashPassword(userCreate.password);
         User user = new User(userCreate.name, hashedPassword);
-        return new UserDto(userRepository.save(user), 0);
+        User saved = userRepository.save(user);
+        UserStats userStats = new UserStats(user);
+        userStatsRepository.save(userStats);
+        return new UserDto(saved, 0);
     }
 
     public UserDto getUserInfo(User user) {

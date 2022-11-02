@@ -8,6 +8,7 @@ import com.demo.app.post.PostService;
 import com.demo.app.user.User;
 import com.demo.app.user.UserRepository;
 import com.demo.app.user.UserService;
+import com.demo.app.user.userStats.UserStatsRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ public class CommentServiceTest {
     @Mock
     UserRepository userRepository;
     @Mock
+    UserStatsRepository userStatsRepository;
+    @Mock
     AuthService authService;
     @Autowired
     JwtUtil jwtUtil;
@@ -43,7 +46,8 @@ public class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        UserService userService = new UserService(userRepository, postRepository, authService, jwtUtil);
+        UserService userService = new UserService(userRepository, postRepository, userStatsRepository, authService,
+                jwtUtil);
         PostService postService = new PostService(postRepository);
         commentService = new CommentService(commentRepository, postService);
         savedUser = new User("testname", "testpassword");

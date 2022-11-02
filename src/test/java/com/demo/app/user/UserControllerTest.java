@@ -65,7 +65,7 @@ class UserControllerTest {
     void canRegister() throws Exception {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "Greatpassword1!");
         UserDto result = new UserDto(savedUser, 0);
-        when(userService.register(userCreate)).thenReturn(result);
+        when(userService.createUser(userCreate)).thenReturn(result);
         mockMvc.perform(post("/user/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userCreate)))

@@ -3,7 +3,9 @@ package com.demo.app.user;
 import com.demo.app.auth.AuthService;
 import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
+import com.demo.app.exception.AppException.UserExistsException;
 import com.demo.app.post.PostRepository;
+import com.demo.app.user.userStats.UserStatsRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +29,8 @@ class UserServiceTest {
     @Mock
     PostRepository postRepository;
     @Mock
+    UserStatsRepository userStatsRepository;
+    @Mock
     AuthService authService;
     private JwtUtil jwtUtil;
     private String password;
@@ -39,7 +43,7 @@ class UserServiceTest {
         jwtUtil = new JwtUtil("secret123456789012345678901234567890");
         password = "testPass123!@#";
         hashedPassword = "$2b$12$C03E3lduNya6x8TG4WAEje8nrqHd2qaqn7rDbUn9SLCnjaA7.j/GC";
-        userService = new UserService(userRepository, postRepository, authService, jwtUtil);
+        userService = new UserService(userRepository, postRepository, userStatsRepository, authService, jwtUtil);
         savedUser = new User("testname", hashedPassword);
         savedUser.setId(1L);
     }
@@ -51,12 +55,19 @@ class UserServiceTest {
     }
 
     @Test
-    void canRegister() {
+    void canCreateUser() {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
         when(userRepository.findByName(any())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        userService.register(userCreate);
+        userService.createUser(userCreate);
         verify(userRepository).save(any());
+    }
+
+    @Test
+    void willThrowException_WhenUserExists() {
+        UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
+        when(userRepository.findByName(any())).thenReturn(Optional.of(savedUser));
+        assertThrows(UserExistsException.class, () -> userService.createUser(userCreate));
     }
 
     @Test
@@ -75,7 +86,7 @@ class UserServiceTest {
     }
 
     @Test
-    void willReturnUserNotFoundException() {
+    void willThrowNotFoundException_WhenUserNotFound() {
         when(userRepository.findByName(savedUser.getName())).thenReturn(Optional.empty());
         var expected = new AppException.NotFoundException("User not found for name: testname");
         Throwable exception = assertThrows(AppException.NotFoundException.class,

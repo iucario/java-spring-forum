@@ -1,5 +1,6 @@
 package com.demo.app.user;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,11 @@ public class UserRepositoryTest {
     void setUp() {
         savedUser = new User("testname", "testpassword");
         userRepository.save(savedUser);
+    }
+
+    @AfterEach
+    void tearDown() {
+        userRepository.deleteAll();
     }
 
     @Test

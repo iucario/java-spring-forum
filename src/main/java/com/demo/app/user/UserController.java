@@ -26,7 +26,7 @@ public class UserController {
 
     @PostMapping(value = "/register", consumes = "application/json", produces = "application/json")
     public ResponseEntity<UserDto> register(@Valid @RequestBody UserDto.UserCreate user) {
-        UserDto userDto = userService.register(user);
+        UserDto userDto = userService.createUser(user);
         return new ResponseEntity<>(userDto, null, HttpStatus.CREATED);
     }
 

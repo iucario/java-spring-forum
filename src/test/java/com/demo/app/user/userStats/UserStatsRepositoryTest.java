@@ -25,7 +25,6 @@ class UserStatsRepositoryTest {
         savedUser.setId(1L);
         userRepository.save(savedUser);
         savedUserStats = new UserStats(savedUser);
-        savedUserStats.setId(1L);
         userStatsRepository.save(savedUserStats);
     }
 
@@ -39,6 +38,5 @@ class UserStatsRepositoryTest {
     void canFindByUserId() {
         UserStats maybeUserStats = userStatsRepository.findByUserId(savedUser.getId()).orElse(null);
         assertNotNull(maybeUserStats);
-
     }
 }
