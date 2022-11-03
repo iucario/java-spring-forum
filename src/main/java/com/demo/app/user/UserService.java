@@ -32,6 +32,11 @@ public class UserService {
                 .orElseThrow(() -> new AppException.UserNotFoundException(userId));
     }
 
+    public UserDto saveUserStats(UserStats userStats) {
+        UserStats saved = userStatsRepository.save(userStats);
+        return new UserDto(saved.getUser(), saved);
+    }
+
     public List<User> getAll() {
         return userRepository.findAll();
     }

@@ -10,6 +10,7 @@ public class PostDto {
     public Long createdAt;
     public Long updatedAt;
     public UserDto author;
+    public Long commentCount = 0L;
 
     public PostDto(Post post, UserDto author) {
         this.id = post.getId();
@@ -24,6 +25,29 @@ public class PostDto {
     public String toString() {
         return String.format("PostDto[id=%d, title=%s body=%s created_at=%d, updated_at=%d, author=%s]", id,
                 title, body, createdAt, updatedAt, author.name);
+    }
+
+    public static class PostListDto {
+        public Long id;
+        public String title;
+        public Long createdAt;
+        public Long updatedAt;
+        public UserDto author;
+        public Long commentCount = 0L;
+
+        public PostListDto(Post post, UserDto author) {
+            this.id = post.getId();
+            this.title = post.getTitle();
+            this.createdAt = post.getCreatedAt();
+            this.updatedAt = post.getUpdatedAt();
+            this.author = author;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("PostListDto[id=%d, title=%s created_at=%d, updated_at=%d, author=%s]", id,
+                    title, createdAt, updatedAt, author.name);
+        }
     }
 
     public static class PostCreate {

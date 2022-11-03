@@ -2,9 +2,8 @@ package com.demo.app.post;
 
 import com.demo.app.auth.AuthService;
 import com.demo.app.user.User;
-import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -40,22 +39,13 @@ public class PostController {
     @PutMapping(consumes = "application/json", produces = "application/json")
     public PostDto updatePost(@RequestBody PostDto.PostUpdate postUpdate, final HttpServletRequest request) {
         final User user = authService.getUser(request);
-        Post post = postService.getById(postUpdate.id);
-        if (!user.getId().equals(post.getUser().getId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
         return postService.updatePost(postUpdate, user);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public String deletePost(@PathVariable Long id, final HttpServletRequest request) {
+    public ResponseEntity deletePost(@PathVariable Long id, final HttpServletRequest request) {
         final User user = authService.getUser(request);
-        Post n = postService.getById(id);
-        if (!n.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
-        postService.deletePostById(id);
-        return "Deleted %d".formatted(id);
+        postService.deletePostById(id, user);
+        return ResponseEntity.noContent().build();
     }
-
 }

@@ -46,7 +46,7 @@ class CommentRepositoryTest {
 
     @Test
     void findByPostId() {
-        List<Comment> comments = commentRepository.findByPostId(savedPost.getId());
+        List<Comment> comments = commentRepository.findByPostId(savedPost.getId(), 0, 100);
         assertEquals(1, comments.size());
     }
 

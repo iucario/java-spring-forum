@@ -1,12 +1,14 @@
 package com.demo.app.file;
 
 import com.demo.app.user.User;
+import com.demo.app.user.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.transaction.Transactional;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -19,10 +21,12 @@ public class FileService {
     private final String uploadDir;
 
     private final FileRepository fileRepository;
+    private final UserService userService;
 
-    FileService(FileRepository fileRepository, @Value("${file.upload-dir}") String uploadDir) {
+    FileService(FileRepository fileRepository, @Value("${file.upload-dir}") String uploadDir, UserService userService) {
         this.fileRepository = fileRepository;
         this.uploadDir = uploadDir;
+        this.userService = userService;
         try {
             Files.createDirectories(Paths.get(uploadDir));
         } catch (IOException e) {
@@ -36,7 +40,10 @@ public class FileService {
         String filename = uuid + extension;
         String path = Paths.get(uploadDir, filename).toString();
         multipartFile.transferTo(new File(path));
-        return fileRepository.save(new FileEntity(filename, path, user));
+        FileEntity fileEntity = fileRepository.save(new FileEntity(filename, path, user));
+        user.incrementFileCount();
+        userService.saveUserStats(user.getUserStats());
+        return fileEntity;
     }
 
     List<FileDto> getAllUserFiles(Long userId) {
@@ -50,6 +57,7 @@ public class FileService {
         return new InputStreamResource(inputStream);
     }
 
+    @Transactional
     void delete(String filename, User user) { // TODO: better error handling
         FileEntity fileEntity = fileRepository.findByName(filename).orElse(null);
         if (fileEntity == null) {
@@ -63,6 +71,8 @@ public class FileService {
         if (file.isFile()) {
             file.delete();
             fileRepository.delete(fileEntity);
+            user.decrementFileCount();
+            userService.saveUserStats(user.getUserStats());
         } else {
             throw new RuntimeException("Not a file");
         }

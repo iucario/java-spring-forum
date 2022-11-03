@@ -37,7 +37,7 @@ class PostRepositoryTest {
     }
 
     @Test
-    void canFindUserPosts() {
+    void findUserPosts() {
         List<Post> posts = postRepository.findUserPosts(savedUser.getId(), 0, 100);
         assertEquals(1, posts.size());
     }
@@ -46,5 +46,11 @@ class PostRepositoryTest {
     void countAll() {
         int count = postRepository.countUserPosts(savedUser.getId());
         assertEquals(1, count);
+    }
+
+    @Test
+    void findPosts() {
+        List<Post> posts = postRepository.findPosts(0, 10);
+        assertEquals(1, posts.size());
     }
 }

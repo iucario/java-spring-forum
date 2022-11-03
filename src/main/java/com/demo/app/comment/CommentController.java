@@ -2,7 +2,6 @@ package com.demo.app.comment;
 
 import com.demo.app.auth.AuthService;
 import com.demo.app.user.User;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,22 +24,23 @@ public class CommentController {
         if (userId != null) {
             return commentService.getByPostAndUser(postId, userId);
         } else {
-            return commentService.getByPostId(postId);
+            return commentService.getByPostId(postId, 0, 10);
         }
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public ResponseEntity<CommentDto> addComment(@RequestBody CommentDto.CommentCreate commentCreate,
-                                                 final HttpServletRequest request) {
+    public CommentDto addComment(@RequestBody CommentDto.CommentCreate commentCreate,
+                                 final HttpServletRequest request) {
         final User user = authService.getUser(request);
         CommentDto commentDto = commentService.addComment(commentCreate, user);
-        return new ResponseEntity<>(commentDto, HttpStatus.CREATED);
+        return commentDto;
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<String> deleteComment(@PathVariable Long id, final HttpServletRequest request) {
+    public ResponseEntity deleteComment(@PathVariable Long id, final HttpServletRequest request) {
         final User user = authService.getUser(request);
-        return commentService.deleteComment(id, user);
+        commentService.deleteComment(id, user);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")

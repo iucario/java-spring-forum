@@ -7,7 +7,6 @@ import com.demo.app.exception.AppException.UserExistsException;
 import com.demo.app.post.PostRepository;
 import com.demo.app.user.userStats.UserStats;
 import com.demo.app.user.userStats.UserStatsRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -59,11 +58,17 @@ class UserServiceTest {
     }
 
     @Test
-    void canGetUserStats() {
+    void getUserStats() {
         when(userStatsRepository.findByUserId(any())).thenReturn(Optional.of(savedUserStats));
-        UserStats maybeUserStats = userStatsRepository.findByUserId(savedUser.getId()).orElse(null);
+        userStatsRepository.findByUserId(savedUser.getId()).orElse(null);
         verify(userStatsRepository).findByUserId(any());
-        Assertions.assertNotNull(maybeUserStats);
+    }
+
+    @Test
+    void saveUserStats() {
+        when(userStatsRepository.save(any())).thenReturn(savedUserStats);
+        userStatsRepository.save(savedUserStats);
+        verify(userStatsRepository).save(any());
     }
 
     @Test
@@ -74,7 +79,7 @@ class UserServiceTest {
     }
 
     @Test
-    void canCreateUser() {
+    void createUser() {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
         when(userRepository.findByName(any())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
@@ -91,7 +96,7 @@ class UserServiceTest {
     }
 
     @Test
-    void canLogin() {
+    void login() {
         UserDto.UserLogin userLogin = new UserDto.UserLogin("testname", password);
         when(authService.authenticate("testname", password)).thenReturn(true);
         UserDto.LoginResponse result = userService.login(userLogin);
@@ -99,7 +104,7 @@ class UserServiceTest {
     }
 
     @Test
-    void canGetByName() {
+    void getByName() {
         when(userRepository.findByName(savedUser.getName())).thenReturn(Optional.of(savedUser));
         userService.getByName("testname");
         verify(userRepository).findByName("testname");
@@ -116,21 +121,21 @@ class UserServiceTest {
     }
 
     @Test
-    void canGetById() {
+    void getById() {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
         userService.getById(savedUser.getId());
         verify(userRepository).findById(savedUser.getId());
     }
 
     @Test
-    void canGetUserInfo() {
+    void getUserInfo() {
         when(userStatsRepository.findByUserId(savedUser.getId())).thenReturn(Optional.of(savedUserStats));
         userService.getUserInfo(savedUser);
         verify(userStatsRepository).findByUserId(savedUser.getId());
     }
 
     @Test
-    void canGetUserProfile() {
+    void getUserProfile() {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
         when(userStatsRepository.findByUserId(savedUser.getId())).thenReturn(Optional.of(savedUserStats));
         userService.getUserProfile(savedUser.getId());
@@ -139,7 +144,7 @@ class UserServiceTest {
     }
 
     @Test
-    void canDeleteUserById() {
+    void deleteUserById() {
         userService.deleteUserById(savedUser.getId());
         verify(userRepository).deleteById(savedUser.getId());
     }

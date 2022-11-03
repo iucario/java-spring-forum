@@ -14,6 +14,15 @@ public class UserDto {
     public Long commentCount;
     public Long fileCount;
 
+    public UserDto(final User user) {
+        this.id = user.getId();
+        this.name = user.getName();
+        this.createdAt = user.getCreatedAt();
+        this.postCount = user.getUserStats().getPostCount();
+        this.commentCount = user.getUserStats().getCommentCount();
+        this.fileCount = user.getUserStats().getFileCount();
+    }
+
     public UserDto(final User user, final UserStats userStats) {
         this.id = user.getId();
         this.name = user.getName();

@@ -169,6 +169,142 @@
       ]
     },
     {
+      "name": "user/register user 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 201\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "pm.test(\"Has keys\", function () {\r",
+              "    pm.expect(pm.response.json()).to.have.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount')\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"otheruser\",\r\n    \"password\": \"Password111!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/user/register",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "register"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "user/register user 2",
+          "originalRequest": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"name\": \"otheruser\",\r\n    \"password\": \"Password111!\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/user/register",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "register"
+              ]
+            }
+          },
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 03 Nov 2022 06:58:47 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 2,\n    \"name\": \"otheruser\",\n    \"createdAt\": 1667458727913,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
+    },
+    {
       "name": "user/register dup name",
       "event": [
         {
@@ -347,6 +483,54 @@
       "response": []
     },
     {
+      "name": "user/login otheruser",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Keys: token\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.all.keys(\"token\");\r",
+              "    pm.collectionVariables.set(\"token-otheruser\", jsonData.token);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"otheruser\",\r\n    \"password\": \"Password111!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/user/login",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "user/login wrong credential",
       "event": [
         {
@@ -400,8 +584,7 @@
               "pm.test(\"Have keys\", function () {\r",
               "    var jsonData = pm.response.json();\r",
               "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
-              "    pm.collectionVariables.set(\"totalPosts\", jsonData.totalItem);\r",
-              "    pm.collectionVariables.set('userId', jsonData.id);\r",
+              "    pm.collectionVariables.set(\"profile-admin\", jsonData)\r",
               "});"
             ],
             "type": "text/javascript"
@@ -506,6 +689,138 @@
       ]
     },
     {
+      "name": "user me otheruser",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Have keys\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Name is 'otheruser'\", () => {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.name).to.equal('otheruser')\r",
+              "    pm.collectionVariables.set(\"profile-otheruser\", jsonData)\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/user/me",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "me"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "user me otheruser",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/user/me",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Thu, 03 Nov 2022 07:05:58 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 2,\n    \"name\": \"otheruser\",\n    \"createdAt\": 1667458727913,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
+    },
+    {
       "name": "user/me without auth",
       "event": [
         {
@@ -605,9 +920,9 @@
               "    pm.response.to.have.status(200);\r",
               "});\r",
               "pm.test(\"Have keys\", function () {\r",
-              "    var jsonData = pm.response.json();\r",
-              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
-              "    pm.collectionVariables.set(\"postCount\", jsonData.totalItem);\r",
+              "    var data = pm.response.json();\r",
+              "    pm.expect(data).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
+              "    pm.collectionVariables.set(\"profile-admin\", data);\r",
               "});"
             ],
             "type": "text/javascript"
@@ -615,6 +930,16 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "GET",
         "header": [],
         "url": {
@@ -626,6 +951,140 @@
             "user",
             "profile",
             "{{userId}}"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "user profile",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/user/profile/{{userId}}",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "profile",
+                "{{userId}}"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 12:23:34 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1667391674015,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
+    },
+    {
+      "name": "user profile otheruser",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Have keys\", function () {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Name is 'otheruser'\", () => {\r",
+              "    var jsonData = pm.response.json();\r",
+              "    pm.expect(jsonData.name).to.equal('otheruser')\r",
+              "    pm.collectionVariables.set(\"profile-otheruser\", jsonData)\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/user/profile/2",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "profile",
+            "2"
           ]
         }
       },
@@ -732,7 +1191,12 @@
               "    let data = pm.response.json()\r",
               "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
               "})\r",
-              ""
+              "pm.test(\"Increment postCount\", () => {\r",
+              "    let data = pm.response.json()\r",
+              "    const userBefore = pm.collectionVariables.get('profile-admin')\r",
+              "    pm.expect(data.author.postCount).to.equal(userBefore.postCount+1)\r",
+              "    pm.collectionVariables.set('profile-admin', data.author)\r",
+              "})"
             ],
             "type": "text/javascript"
           }
@@ -854,7 +1318,7 @@
       ]
     },
     {
-      "name": "post  add another",
+      "name": "post  add 2",
       "event": [
         {
           "listen": "test",
@@ -903,7 +1367,66 @@
       "response": []
     },
     {
-      "name": "post list",
+      "name": "post  add by otheruser",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Is a post\", () => {\r",
+              "    let data = pm.response.json()\r",
+              "    pm.expect(data).to.be.an('object')\r",
+              "})\r",
+              "pm.test(\"Have keys\", () => {\r",
+              "    let data = pm.response.json()\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
+              "})\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"title\": \"Other\",\r\n    \"body\": \"post by otheruser\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/post",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "post"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post list by user",
       "event": [
         {
           "listen": "test",
@@ -993,24 +1516,83 @@
       "response": []
     },
     {
-      "name": "post  delete post 1",
+      "name": "post  update wrong user",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
+              "pm.test(\"Status code is 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
               "});\r",
-              "pm.test(\"Body matches string\", function () {\r",
-              "    pm.expect(pm.response.text()).to.include(\"Deleted\");\r",
-              "});"
+              ""
             ],
             "type": "text/javascript"
           }
         }
       ],
       "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 1,\r\n    \"body\": \"update post 1. By user 2\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/post",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "post"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post  delete post 1 wrong user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});\r",
+              ""
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
         "method": "DELETE",
         "header": [],
         "url": {
@@ -1021,6 +1603,277 @@
           "path": [
             "api",
             "post",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "post  delete post",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/api/post/{{postId}}",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "post",
+            "{{postId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comment add to post 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Has keys\", () => {\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
+              "})\r",
+              "\r",
+              "pm.test(\"Increase comment count\", () => {\r",
+              "    const before = pm.collectionVariables.get('profile-admin')\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data.author.commentCount).to.equal(before.commentCount + 1)\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"postId\": 2,\r\n    \"body\": \"comment to post 2\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/comment",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "comment"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comment get from post 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "\r",
+              "pm.test('Is list', () => {\r",
+              "    const data = pm.response.json();\r",
+              "    pm.expect(data).to.be.an('array')\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/api/comment?postId=2",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "comment"
+          ],
+          "query": [
+            {
+              "key": "postId",
+              "value": "2"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comment update",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test('Comment body updated', () => {\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data.body).to.be.equal(\"comment updated\")\r",
+              "})\r",
+              "\r",
+              "pm.test('Time updated', () => {\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data.updatedAt).to.be.greaterThan(data.createdAt)\r",
+              "})\r",
+              "\r",
+              "pm.test(\"Has keys\", () => {\r",
+              "    const data = pm.response.json()\r",
+              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"id\": 1,\r\n    \"body\": \"comment updated\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/comment",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "comment"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comment delete wrong user",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {\r",
+              "    pm.response.to.have.status(401);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token-otheruser}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/comment/1",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "comment",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "comment delete",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 204\", function () {\r",
+              "    pm.response.to.have.status(204);\r",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{host}}/api/comment/1",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "api",
+            "comment",
             "1"
           ]
         }
@@ -1165,6 +2018,127 @@
       ]
     },
     {
+      "name": "user/me",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {\r",
+              "    pm.response.to.have.status(200);\r",
+              "});\r",
+              "pm.test(\"Have keys\", function () {\r",
+              "    var data = pm.response.json();\r",
+              "    pm.expect(data).to.have.all.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount');\r",
+              "});\r",
+              "pm.test(\"Increse file count\", () => {\r",
+              "    const before = pm.collectionVariables.get('profile-admin')\r",
+              "    const data = pm.response.json();\r",
+              "    pm.expect(data.fileCount).to.equal(before.fileCount + 1)\r",
+              "})"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{host}}/user/me",
+          "host": [
+            "{{host}}"
+          ],
+          "path": [
+            "user",
+            "me"
+          ]
+        }
+      },
+      "response": [
+        {
+          "name": "user/me",
+          "originalRequest": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/user/me",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "user",
+                "me"
+              ]
+            }
+          },
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [
+            {
+              "key": "Vary",
+              "value": "Origin"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Method"
+            },
+            {
+              "key": "Vary",
+              "value": "Access-Control-Request-Headers"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-XSS-Protection",
+              "value": "1; mode=block"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, max-age=0, must-revalidate"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Transfer-Encoding",
+              "value": "chunked"
+            },
+            {
+              "key": "Date",
+              "value": "Wed, 02 Nov 2022 12:21:54 GMT"
+            },
+            {
+              "key": "Keep-Alive",
+              "value": "timeout=60"
+            },
+            {
+              "key": "Connection",
+              "value": "keep-alive"
+            }
+          ],
+          "cookie": [],
+          "body": "{\n    \"id\": 1,\n    \"name\": \"admin\",\n    \"createdAt\": 1667391674015,\n    \"postCount\": 0,\n    \"commentCount\": 0,\n    \"fileCount\": 0\n}"
+        }
+      ]
+    },
+    {
       "name": "file list",
       "event": [
         {
@@ -1272,188 +2246,6 @@
         }
       },
       "response": []
-    },
-    {
-      "name": "comment add to post 2",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 201\", function () {\r",
-              "    pm.response.to.have.status(201);\r",
-              "});\r",
-              "\r",
-              "pm.test(\"Has keys\", () => {\r",
-              "    const data = pm.response.json()\r",
-              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
-              "})"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"postId\": 2,\r\n    \"body\": \"comment to post 2\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{host}}/api/comment",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "comment"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "comment get from post 2",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "\r",
-              "pm.test('Is list', () => {\r",
-              "    const data = pm.response.json();\r",
-              "    pm.expect(data).to.be.an('array')\r",
-              "})"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{host}}/api/comment?postId=2",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "comment"
-          ],
-          "query": [
-            {
-              "key": "postId",
-              "value": "2"
-            }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "comment update",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});\r",
-              "pm.test('Comment body updated', () => {\r",
-              "    const data = pm.response.json()\r",
-              "    pm.expect(data.body).to.be.equal(\"comment updated\")\r",
-              "})\r",
-              "\r",
-              "pm.test('Time updated', () => {\r",
-              "    const data = pm.response.json()\r",
-              "    pm.expect(data.updatedAt).to.be.greaterThan(data.createdAt)\r",
-              "})\r",
-              "\r",
-              "pm.test(\"Has keys\", () => {\r",
-              "    const data = pm.response.json()\r",
-              "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
-              "})"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "PUT",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"id\": 1,\r\n    \"body\": \"comment updated\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{host}}/api/comment",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "comment"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "comment delete",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Status code is 200\", function () {\r",
-              "    pm.response.to.have.status(200);\r",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n    \"itemId\": 1,\r\n    \"body\": \"comment to item 1\"\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": {
-          "raw": "{{host}}/api/comment/1",
-          "host": [
-            "{{host}}"
-          ],
-          "path": [
-            "api",
-            "comment",
-            "1"
-          ]
-        }
-      },
-      "response": []
     }
   ],
   "auth": {
@@ -1519,6 +2311,18 @@
     },
     {
       "key": "postCount",
+      "value": ""
+    },
+    {
+      "key": "token-otheruser",
+      "value": ""
+    },
+    {
+      "key": "profile-otheruser",
+      "value": ""
+    },
+    {
+      "key": "profile-admin",
       "value": ""
     }
   ]

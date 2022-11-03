@@ -44,6 +44,35 @@ public class User {
         return String.format("User[id=%d, name=%s, created_at=%d]", id, name, createdAt);
     }
 
+    public UserStats incrementPostCount() {
+        userStats.setPostCount(userStats.getPostCount() + 1);
+        return userStats;
+    }
+
+    public UserStats incrementCommentCount() {
+        userStats.setCommentCount(userStats.getCommentCount() + 1);
+        return userStats;
+    }
+
+    public UserStats incrementFileCount() {
+        userStats.setFileCount(userStats.getFileCount() + 1);
+        return userStats;
+    }
+
+    public UserStats decrementPostCount() {
+        userStats.setPostCount(userStats.getPostCount() - 1);
+        return userStats;
+    }
+
+    public UserStats decrementCommentCount() {
+        userStats.setCommentCount(userStats.getCommentCount() - 1);
+        return userStats;
+    }
+
+    public void decrementFileCount() {
+        userStats.setFileCount(userStats.getFileCount() - 1);
+    }
+
     public Long getId() {
         return id;
     }
@@ -75,4 +104,11 @@ public class User {
     public void setUserStats(UserStats userStats) {
         this.userStats = userStats;
     }
+
+    public void setUserStats(Long postCount, Long commentCount, Long fileCount) {
+        this.userStats.setPostCount(postCount);
+        this.userStats.setCommentCount(commentCount);
+        this.userStats.setFileCount(fileCount);
+    }
+
 }

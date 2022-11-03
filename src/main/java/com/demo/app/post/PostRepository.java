@@ -16,4 +16,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT COUNT(*) FROM Post i WHERE i.user.id = :userId")
     int countUserPosts(@Param("userId") Long userId);
+
+    @Query(value = "SELECT * FROM posts p ORDER BY p.created_at DESC LIMIT :limit OFFSET :offset", nativeQuery = true)
+    List<Post> findPosts(@Param("offset") int offset, @Param("limit") int limit);
 }

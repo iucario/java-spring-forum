@@ -10,8 +10,9 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 
-    @Query("SELECT c FROM Comment c WHERE c.post.id = :postId")
-    List<Comment> findByPostId(@Param("postId") Long itemId);
+    @Query(value = "SELECT * FROM comments c WHERE c.post_id = :postId ORDER BY created_at DESC LIMIT :limit OFFSET " +
+            ":offset", nativeQuery = true)
+    List<Comment> findByPostId(@Param("postId") Long itemId, @Param("offset") int offset, @Param("limit") int limit);
 
     @Query("SELECT c FROM Comment c WHERE c.user.id = :userId")
     List<Comment> findByUserId(@Param("userId") Long userId);

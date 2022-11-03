@@ -55,7 +55,6 @@ public class FileController {
             fileService.delete(filename, user);
             return ResponseEntity.ok("file deleted");
         } catch (Exception e) {
-            System.out.println(e.getMessage());
             return ResponseEntity.badRequest().body("file delete failed");
         }
     }

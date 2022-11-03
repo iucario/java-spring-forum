@@ -1,5 +1,6 @@
 package com.demo.app.comment;
 
+import com.demo.app.exception.AppException;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
@@ -7,10 +8,10 @@ import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
 import com.demo.app.user.userStats.UserStats;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
@@ -36,7 +37,7 @@ public class CommentService {
         return new UserDto(user, new UserStats(user));
     }
 
-    UserDto getCommentAuthor(Long commentId) {
+    public UserDto getCommentAuthor(Long commentId) {
         User user = getById(commentId).getUser();
         return new UserDto(user, new UserStats(user));
     }
@@ -46,8 +47,8 @@ public class CommentService {
         return new CommentDto(comment, author);
     }
 
-    public List<CommentDto> getByPostId(Long postId) {
-        return commentRepository.findByPostId(postId)
+    public List<CommentDto> getByPostId(Long postId, int offset, int limit) {
+        return commentRepository.findByPostId(postId, offset, limit)
                 .stream()
                 .map((this::createCommentDto))
                 .toList();
@@ -69,32 +70,36 @@ public class CommentService {
                 .toList();
     }
 
+    @Transactional
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
-        UserDto author = new UserDto(user, new UserStats(user));
+        user.incrementCommentCount();
+        UserDto author = userService.saveUserStats(user.getUserStats());
         return new CommentDto(comment, author);
     }
 
-    public ResponseEntity<String> deleteComment(Long id, User user) {
-        Comment comment = getById(id);
-        if (!comment.getUser().getId().equals(user.getId())) {
-            System.out.println("Unauthorized");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+    @Transactional
+    public void deleteComment(Long id, User user) {
+        getUserComment(id, user);
         commentRepository.deleteById(id);
-        return ResponseEntity.ok("Deleted %d".formatted(id));
-
+        user.decrementCommentCount();
+        userService.saveUserStats(user.getUserStats());
     }
 
     public CommentDto updateComment(CommentDto.CommentUpdate commentUpdate, User user) {
-        Comment comment = getById(commentUpdate.id);
-        if (!comment.getUser().getId().equals(user.getId())) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
+        Comment comment = getUserComment(commentUpdate.id, user);
         comment.setBody(commentUpdate.body);
         comment.updateTime();
-        UserDto author = new UserDto(user, new UserStats(user));
+        UserDto author = userService.getUserInfo(user);
         return new CommentDto(commentRepository.save(comment), author);
+    }
+
+    private Comment getUserComment(Long id, User user) {
+        Comment comment = getById(id);
+        if (!comment.getUser().getId().equals(user.getId())) {
+            throw new AppException.UnauthorizedException();
+        }
+        return comment;
     }
 }

@@ -7,7 +7,7 @@ public class AppException {
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED, reason = "unauthorized")
     public static class UnauthorizedException extends RuntimeException {
         public UnauthorizedException() {
-            super("Invalid username or password");
+            super("Unauthorized");
         }
 
         public UnauthorizedException(String message) {

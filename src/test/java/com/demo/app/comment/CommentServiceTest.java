@@ -40,11 +40,12 @@ public class CommentServiceTest {
         commentService = new CommentService(commentRepository, postService, userService);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
+        savedUser.setUserStats(new UserStats(savedUser));
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
         savedComment = new Comment("This is comment", savedPost, savedUser);
         savedComment.setId(1L);
-        savedAuthor = new UserDto(savedUser, new UserStats(savedUser));
+        savedAuthor = new UserDto(savedUser);
     }
 
     @AfterEach
@@ -53,7 +54,7 @@ public class CommentServiceTest {
     }
 
     @Test
-    void canGetCommentAuthor() {
+    void getCommentAuthor() {
         when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
         UserDto user = commentService.getCommentAuthor(savedComment.getId());
         verify(commentRepository).findById(savedComment.getId());
@@ -61,17 +62,20 @@ public class CommentServiceTest {
     }
 
     @Test
-    void canAddComment() {
+    void addComment() {
         CommentDto.CommentCreate commentCreate = new CommentDto.CommentCreate("This is comment", savedPost.getId());
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
         when(postService.getById(savedPost.getId())).thenReturn(savedPost);
+
         CommentDto comment = commentService.addComment(commentCreate, savedUser);
+
         verify(commentRepository).save(any(Comment.class));
+        verify(userService).saveUserStats(any(UserStats.class));
         assertEquals(commentCreate.body, comment.body);
     }
 
     @Test
-    void canGetById() {
+    void getById() {
         when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
         Comment comment = commentService.getById(savedComment.getId());
         verify(commentRepository).findById(savedComment.getId());
@@ -81,16 +85,18 @@ public class CommentServiceTest {
     }
 
     @Test
-    void canGetByPostId() {
-        when(commentRepository.findByPostId(savedPost.getId())).thenReturn(List.of(savedComment));
+    void getByPostId() {
+        when(commentRepository.findByPostId(savedPost.getId(), 0, 100)).thenReturn(List.of(savedComment));
         when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
-        commentService.getByPostId(savedPost.getId());
-        verify(commentRepository).findByPostId(savedPost.getId());
+
+        commentService.getByPostId(savedPost.getId(), 0, 100);
+
+        verify(commentRepository).findByPostId(savedPost.getId(), 0, 100);
         verify(commentRepository).findById(savedComment.getId());
     }
 
     @Test
-    void canGetByPostAndUser() {
+    void getByPostAndUser() {
         when(userService.getUserProfile(savedUser.getId())).thenReturn(savedAuthor);
         when(commentRepository.findByPostAndUser(savedPost.getId(), savedUser.getId())).thenReturn(List.of(savedComment));
         commentService.getByPostAndUser(savedPost.getId(), savedUser.getId());
@@ -98,14 +104,15 @@ public class CommentServiceTest {
     }
 
     @Test
-    void canDeleteComment() {
+    void deleteComment() {
         when(commentRepository.findById(1L)).thenReturn(Optional.of(savedComment));
         commentService.deleteComment(1L, savedUser);
         verify(commentRepository).deleteById(1L);
+        verify(userService).saveUserStats(any(UserStats.class));
     }
 
     @Test
-    void canUpdateComment() {
+    void updateComment() {
         CommentDto.CommentUpdate commentUpdate = new CommentDto.CommentUpdate(1L, "This is updated comment");
         when(commentRepository.findById(1L)).thenReturn(Optional.of(savedComment));
         when(commentRepository.save(any(Comment.class))).thenReturn(savedComment);
