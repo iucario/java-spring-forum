@@ -26,7 +26,7 @@ public class PostService {
 
     public Post getById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> {
-            throw new AppException.NotFoundException(String.format("Post not found for id %s", id));
+            throw new AppException.PostNotFoundException(id);
         });
     }
 
@@ -41,7 +41,7 @@ public class PostService {
 
     public PostDto updatePost(PostDto.PostUpdate postUpdate, User user) {
         Post existingPost = this.postRepository.findById(postUpdate.id).orElseThrow(() -> {
-            throw new AppException.NotFoundException(String.format("Post not found for id %s", postUpdate.id));
+            throw new AppException.PostNotFoundException(postUpdate.id);
         });
         existingPost.setBody(postUpdate.body);
         existingPost.updateTime();

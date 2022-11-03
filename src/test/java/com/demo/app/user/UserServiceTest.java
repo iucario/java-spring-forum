@@ -7,7 +7,7 @@ import com.demo.app.exception.AppException.UserExistsException;
 import com.demo.app.post.PostRepository;
 import com.demo.app.user.userStats.UserStats;
 import com.demo.app.user.userStats.UserStatsRepository;
-import com.demo.app.user.userStats.UserStatsService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,24 +34,22 @@ class UserServiceTest {
     UserStatsRepository userStatsRepository;
     @Mock
     AuthService authService;
-    @Mock
-    UserStatsService userStatsService;
     private JwtUtil jwtUtil;
     private String password;
     private String hashedPassword;
     private UserService userService;
     private User savedUser;
-    private UserStats userStats;
+    private UserStats savedUserStats;
 
     @BeforeEach
     void setUp() {
         jwtUtil = new JwtUtil("secret123456789012345678901234567890");
         password = "testPass123!@#";
         hashedPassword = "$2b$12$C03E3lduNya6x8TG4WAEje8nrqHd2qaqn7rDbUn9SLCnjaA7.j/GC";
-        userService = new UserService(userRepository, userStatsService, authService, jwtUtil);
+        userService = new UserService(userRepository, userStatsRepository, authService, jwtUtil);
         savedUser = new User("testname", hashedPassword);
         savedUser.setId(1L);
-        userStats = new UserStats(savedUser);
+        savedUserStats = new UserStats(savedUser);
     }
 
     @Test
@@ -61,17 +59,32 @@ class UserServiceTest {
     }
 
     @Test
+    void canGetUserStats() {
+        when(userStatsRepository.findByUserId(any())).thenReturn(Optional.of(savedUserStats));
+        UserStats maybeUserStats = userStatsRepository.findByUserId(savedUser.getId()).orElse(null);
+        verify(userStatsRepository).findByUserId(any());
+        Assertions.assertNotNull(maybeUserStats);
+    }
+
+    @Test
+    void willThrowUserNotFoundException_WhenUserStatsNotFound() {
+        when(userStatsRepository.findByUserId(any())).thenReturn(Optional.empty());
+        assertThrows(AppException.UserNotFoundException.class, () -> userService.getUserStats(savedUser.getId()));
+        verify(userStatsRepository).findByUserId(any());
+    }
+
+    @Test
     void canCreateUser() {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
         when(userRepository.findByName(any())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(userStatsService.save(any(UserStats.class))).thenReturn(userStats);
+        when(userStatsRepository.save(any(UserStats.class))).thenReturn(savedUserStats);
         userService.createUser(userCreate);
         verify(userRepository).save(any());
     }
 
     @Test
-    void willThrowException_WhenUserExists() {
+    void willThrowUserExistsException_WhenUserExists() {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", password);
         when(userRepository.findByName(any())).thenReturn(Optional.of(savedUser));
         assertThrows(UserExistsException.class, () -> userService.createUser(userCreate));
@@ -93,10 +106,10 @@ class UserServiceTest {
     }
 
     @Test
-    void willThrowNotFoundException_WhenUserNotFound() {
+    void willThrowUserNotFoundException_WhenUserNotFound() {
         when(userRepository.findByName(savedUser.getName())).thenReturn(Optional.empty());
-        var expected = new AppException.NotFoundException("User not found for name: testname");
-        Throwable exception = assertThrows(AppException.NotFoundException.class,
+        var expected = new AppException.UserNotFoundException("testname");
+        Throwable exception = assertThrows(AppException.UserNotFoundException.class,
                 () -> userService.getByName("testname"));
         assertEquals(expected.getMessage(), exception.getMessage());
         verify(userRepository).findByName("testname");
@@ -111,17 +124,17 @@ class UserServiceTest {
 
     @Test
     void canGetUserInfo() {
-        when(userStatsService.getUserStats(savedUser.getId())).thenReturn(userStats);
+        when(userStatsRepository.findByUserId(savedUser.getId())).thenReturn(Optional.of(savedUserStats));
         userService.getUserInfo(savedUser);
-        verify(userStatsService).getUserStats(savedUser.getId());
+        verify(userStatsRepository).findByUserId(savedUser.getId());
     }
 
     @Test
     void canGetUserProfile() {
         when(userRepository.findById(savedUser.getId())).thenReturn(Optional.of(savedUser));
-        when(userStatsService.getUserStats(savedUser.getId())).thenReturn(userStats);
+        when(userStatsRepository.findByUserId(savedUser.getId())).thenReturn(Optional.of(savedUserStats));
         userService.getUserProfile(savedUser.getId());
-        verify(userStatsService).getUserStats(savedUser.getId());
+        verify(userStatsRepository).findByUserId(savedUser.getId());
         verify(userRepository).findById(savedUser.getId());
     }
 

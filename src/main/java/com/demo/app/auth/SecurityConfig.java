@@ -29,5 +29,4 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter { // todo: depr
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
-
 }

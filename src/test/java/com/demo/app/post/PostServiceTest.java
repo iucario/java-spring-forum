@@ -52,12 +52,12 @@ public class PostServiceTest {
     }
 
     @Test
-    void willReturnNotFound() {
+    void willThrowPostNotFoundException() {
         when(postRepository.findById(1L)).thenReturn(Optional.empty());
-        Throwable exception = assertThrows(AppException.NotFoundException.class, () -> {
+        Throwable exception = assertThrows(AppException.PostNotFoundException.class, () -> {
             postService.getById(savedPost.getId());
         });
-        assertEquals("Post not found for id 1", exception.getMessage());
+        assertEquals("Post not found for id : 1", exception.getMessage());
         verify(postRepository).findById(savedPost.getId());
     }
 
