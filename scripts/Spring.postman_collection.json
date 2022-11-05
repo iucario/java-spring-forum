@@ -54,6 +54,9 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [],
         "body": {
@@ -186,6 +189,9 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
       "request": {
         "auth": {
           "type": "noauth"
@@ -458,6 +464,9 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [],
         "body": {
@@ -547,6 +556,9 @@
         }
       ],
       "request": {
+        "auth": {
+          "type": "noauth"
+        },
         "method": "POST",
         "header": [],
         "body": {
@@ -836,6 +848,9 @@
           }
         }
       ],
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
       "request": {
         "auth": {
           "type": "noauth"
@@ -872,7 +887,8 @@
         }
       ],
       "protocolProfileBehavior": {
-        "disableBodyPruning": true
+        "disableBodyPruning": true,
+        "disableCookies": true
       },
       "request": {
         "auth": {
@@ -1189,7 +1205,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
               "})\r",
               "pm.test(\"Increment postCount\", () => {\r",
               "    let data = pm.response.json()\r",
@@ -1301,7 +1317,7 @@
             },
             {
               "key": "Date",
-              "value": "Wed, 02 Nov 2022 12:24:10 GMT"
+              "value": "Thu, 03 Nov 2022 12:28:52 GMT"
             },
             {
               "key": "Keep-Alive",
@@ -1313,7 +1329,7 @@
             }
           ],
           "cookie": [],
-          "body": "{\n    \"id\": 2,\n    \"title\": \"Hello World\",\n    \"body\": \"changed to public\",\n    \"createdAt\": 1667391850317,\n    \"updatedAt\": 1667391850317,\n    \"author\": {\n        \"id\": 1,\n        \"name\": \"admin\",\n        \"createdAt\": 1667391674015,\n        \"postCount\": 0,\n        \"commentCount\": 0,\n        \"fileCount\": 0\n    }\n}"
+          "body": "{\n    \"id\": 4,\n    \"title\": \"Hello World\",\n    \"body\": \"changed to public\",\n    \"createdAt\": 1667478532996,\n    \"updatedAt\": 1667478532996,\n    \"author\": {\n        \"id\": 1,\n        \"name\": \"admin\",\n        \"createdAt\": 1667478476900,\n        \"postCount\": 2,\n        \"commentCount\": 0,\n        \"fileCount\": 0\n    },\n    \"commentCount\": 0\n}"
         }
       ]
     },
@@ -1333,7 +1349,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
               "})\r",
               ""
             ],
@@ -1382,7 +1398,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
               "})\r",
               ""
             ],
@@ -1451,13 +1467,27 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{host}}/api/post",
+          "raw": "{{host}}/api/post?userId=1&offset=0&size=20",
           "host": [
             "{{host}}"
           ],
           "path": [
             "api",
             "post"
+          ],
+          "query": [
+            {
+              "key": "userId",
+              "value": "1"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "20"
+            }
           ]
         }
       },
@@ -1479,7 +1509,7 @@
               "})\r",
               "pm.test(\"Have keys\", () => {\r",
               "    let data = pm.response.json()\r",
-              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author')\r",
+              "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
               "})\r",
               "pm.test(\"Time updated\", () => {\r",
               "    let data = pm.response.json()\r",
@@ -1716,7 +1746,7 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{host}}/api/comment?postId=2",
+          "raw": "{{host}}/api/comment?postId=2&offset=0",
           "host": [
             "{{host}}"
           ],
@@ -1728,6 +1758,10 @@
             {
               "key": "postId",
               "value": "2"
+            },
+            {
+              "key": "offset",
+              "value": "0"
             }
           ]
         }

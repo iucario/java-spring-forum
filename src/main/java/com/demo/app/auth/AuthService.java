@@ -28,6 +28,7 @@ public class AuthService {
         return result.verified;
     }
 
+    @Deprecated
     public User getUser(HttpServletRequest request) {
         final Claims claims = (Claims) request.getAttribute("claims");
         return userRepository.findByName(claims.get("sub", String.class)).orElseThrow(

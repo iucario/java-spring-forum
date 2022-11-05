@@ -32,7 +32,6 @@ public class UserController {
     @GetMapping(value = "/me", produces = "application/json")
     public UserDto getMe() {
         User user = authService.getCurrentUser();
-        System.out.println(user);
         return userService.getUserInfo(user);
     }
 

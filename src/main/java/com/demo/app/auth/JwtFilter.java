@@ -1,25 +1,26 @@
 package com.demo.app.auth;
 
 import io.jsonwebtoken.Claims;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class JwtFilter extends GenericFilterBean {
+@Component
+public class JwtFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
 
-    public JwtFilter(final String secret) {
+    public JwtFilter(@Value("${jwt.secret}") final String secret) {
         this.jwtUtil = new JwtUtil(secret);
     }
 
@@ -29,9 +30,9 @@ public class JwtFilter extends GenericFilterBean {
      * Add claims to user details
      */
     @Override
-    public void doFilter(final ServletRequest req,
-                         final ServletResponse res,
-                         final FilterChain chain) throws IOException, ServletException {
+    protected void doFilterInternal(final HttpServletRequest req,
+                                    final HttpServletResponse res,
+                                    final FilterChain chain) throws IOException, ServletException {
         final String token = getTokenString(req).orElse(null);
         if (token == null) {
             chain.doFilter(req, res);
@@ -63,17 +64,15 @@ public class JwtFilter extends GenericFilterBean {
         chain.doFilter(req, res);
     }
 
-    private Optional<String> getTokenString(final ServletRequest req) {
-        final HttpServletRequest request = (HttpServletRequest) req;
-        final String authHeader = request.getHeader("Authorization");
+    private Optional<String> getTokenString(final HttpServletRequest req) {
+        final String authHeader = req.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return Optional.of(authHeader.substring(7));
         }
         return Optional.empty();
     }
 
-    private void handleException(final ServletResponse res, String message) throws IOException {
-        final HttpServletResponse response = (HttpServletResponse) res;
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
+    private void handleException(final HttpServletResponse res, String message) throws IOException {
+        res.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
     }
 }
