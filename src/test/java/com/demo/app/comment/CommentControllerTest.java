@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(CommentController.class)
 class CommentControllerTest {
     @Autowired
@@ -75,7 +77,6 @@ class CommentControllerTest {
         when(postService.getById(1L)).thenReturn(savedPost);
         when(commentService.addComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(post("/api/comment")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"body\":\"content\",\"postId\":1}"))
                 .andExpect(status().isOk())
@@ -84,10 +85,8 @@ class CommentControllerTest {
 
     @Test
     void canDeleteComment() throws Exception {
-        ResponseEntity<String> resp = ResponseEntity.ok("Deleted 1");
         when(authService.getCurrentUser()).thenReturn(savedUser);
-        mockMvc.perform(delete("/api/comment/1")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}"))
+        mockMvc.perform(delete("/api/comment/1"))
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -97,7 +96,6 @@ class CommentControllerTest {
         when(authService.getCurrentUser()).thenReturn(savedUser);
         when(commentService.updateComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(put("/api/comment")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"id\":1,\"body\":\"content\"}"))
                 .andExpect(status().isOk())

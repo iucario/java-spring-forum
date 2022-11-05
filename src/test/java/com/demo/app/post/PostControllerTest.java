@@ -9,6 +9,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(PostController.class)
 class PostControllerTest {
     @Autowired
@@ -52,7 +54,6 @@ class PostControllerTest {
         List<PostDto> result = List.of(new PostDto(savedPost, author));
         when(postService.getUserPosts(1L, 0, 100)).thenReturn(result);
         mockMvc.perform(get("/api/post")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .param("userId", "1")
                         .param("offset", "0")
                         .param("size", "100"))
@@ -69,7 +70,6 @@ class PostControllerTest {
         when(postService.addPost(any(), any())).thenReturn(result);
         when(authService.getCurrentUser()).thenReturn(savedUser);
         mockMvc.perform(post("/api/post")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postCreate)))
                 .andExpect(status().isOk())
@@ -87,7 +87,6 @@ class PostControllerTest {
         when(postService.updatePost(any(), any())).thenReturn(result);
         when(authService.getCurrentUser()).thenReturn(savedUser);
         mockMvc.perform(put("/api/post")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postUpdate)))
                 .andExpect(status().isOk())
@@ -101,8 +100,7 @@ class PostControllerTest {
     void deletePost() throws Exception {
         when(authService.getCurrentUser()).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
-        mockMvc.perform(delete("/api/post/" + savedPost.getId())
-                        .requestAttr("claims", "{\"sub\":\"testname\"}"))
+        mockMvc.perform(delete("/api/post/" + savedPost.getId()))
                 .andExpect(status().is2xxSuccessful());
     }
 }

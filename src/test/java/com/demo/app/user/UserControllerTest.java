@@ -7,6 +7,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest(UserController.class)
 class UserControllerTest {
     @Autowired
@@ -88,8 +90,7 @@ class UserControllerTest {
     void canGetMe() throws Exception {
         UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserInfo(any())).thenReturn(result);
-        mockMvc.perform(get("/user/me")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}"))
+        mockMvc.perform(get("/user/me"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", Matchers.is("testname")))
                 .andExpect(jsonPath("$.postCount", Matchers.is(0)));
@@ -99,8 +100,7 @@ class UserControllerTest {
     void canGetUserProfile() throws Exception {
         UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserProfile(any())).thenReturn(result);
-        mockMvc.perform(get("/user/profile/1")
-                        .requestAttr("claims", "{\"sub\":\"testname\"}"))
+        mockMvc.perform(get("/user/profile/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(result)));
     }
