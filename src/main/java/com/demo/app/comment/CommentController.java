@@ -5,7 +5,6 @@ import com.demo.app.user.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -20,33 +19,33 @@ public class CommentController {
     }
 
     @GetMapping(produces = "application/json")
-    public List<CommentDto> getComments(@RequestParam Long postId, @RequestParam(required = false) Long userId) {
+    public List<CommentDto> getComments(@RequestParam Long postId, @RequestParam(required = false) Long userId,
+                                        @RequestParam(required = false, defaultValue = "0") Integer offset,
+                                        @RequestParam(required = false, defaultValue = "20") Integer size) {
         if (userId != null) {
             return commentService.getByPostAndUser(postId, userId);
         } else {
-            return commentService.getByPostId(postId, 0, 10);
+            return commentService.getByPostId(postId, offset, size);
         }
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public CommentDto addComment(@RequestBody CommentDto.CommentCreate commentCreate,
-                                 final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public CommentDto addComment(@RequestBody CommentDto.CommentCreate commentCreate) {
+        final User user = authService.getCurrentUser();
         CommentDto commentDto = commentService.addComment(commentCreate, user);
         return commentDto;
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity deleteComment(@PathVariable Long id, final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public ResponseEntity deleteComment(@PathVariable Long id) {
+        final User user = authService.getCurrentUser();
         commentService.deleteComment(id, user);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
-    public CommentDto updateComment(@RequestBody CommentDto.CommentUpdate commentUpdate,
-                                    final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public CommentDto updateComment(@RequestBody CommentDto.CommentUpdate commentUpdate) {
+        final User user = authService.getCurrentUser();
         return commentService.updateComment(commentUpdate, user);
     }
 

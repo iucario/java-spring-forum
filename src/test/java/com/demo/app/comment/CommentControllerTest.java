@@ -56,9 +56,8 @@ class CommentControllerTest {
     @Test
     void canGetComments() throws Exception {
         List<CommentDto> result = List.of(new CommentDto(savedComment, author));
-        when(authService.getUser(any())).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
-        when(commentService.getByPostId(1L, 0, 10)).thenReturn(result);
+        when(commentService.getByPostId(1L, 0, 20)).thenReturn(result);
         mockMvc.perform(get("/api/comment?postId=1"))
                 .andExpect(status().isOk())
                 .andExpect(content().json(objectMapper.writeValueAsString(result)));
@@ -72,7 +71,7 @@ class CommentControllerTest {
     @Test
     void canAddComment() throws Exception {
         CommentDto result = new CommentDto(savedComment, author);
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
         when(commentService.addComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(post("/api/comment")
@@ -86,7 +85,7 @@ class CommentControllerTest {
     @Test
     void canDeleteComment() throws Exception {
         ResponseEntity<String> resp = ResponseEntity.ok("Deleted 1");
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         mockMvc.perform(delete("/api/comment/1")
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))
                 .andExpect(status().is2xxSuccessful());
@@ -95,7 +94,7 @@ class CommentControllerTest {
     @Test
     void canUpdateComment() throws Exception {
         CommentDto result = new ResponseEntity<>(new CommentDto(savedComment, author), null, 200).getBody();
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         when(commentService.updateComment(any(), eq(savedUser))).thenReturn(result);
         mockMvc.perform(put("/api/comment")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")

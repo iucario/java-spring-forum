@@ -51,11 +51,11 @@ class PostControllerTest {
     void getUserPosts() throws Exception {
         List<PostDto> result = List.of(new PostDto(savedPost, author));
         when(postService.getUserPosts(1L, 0, 100)).thenReturn(result);
-        when(authService.getUser(any())).thenReturn(savedUser);
         mockMvc.perform(get("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
+                        .param("userId", "1")
                         .param("offset", "0")
-                        .param("limit", "100"))
+                        .param("size", "100"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id", Matchers.is(1)))
                 .andExpect(jsonPath("$[0].title", Matchers.is("title")))
@@ -67,7 +67,7 @@ class PostControllerTest {
         PostDto result = new PostDto(savedPost, author);
         PostDto.PostCreate postCreate = new PostDto.PostCreate("title", "content");
         when(postService.addPost(any(), any())).thenReturn(result);
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         mockMvc.perform(post("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +85,7 @@ class PostControllerTest {
         PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("body", 1L);
         when(postService.getById(1L)).thenReturn(savedPost);
         when(postService.updatePost(any(), any())).thenReturn(result);
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         mockMvc.perform(put("/api/post")
                         .requestAttr("claims", "{\"sub\":\"testname\"}")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +99,7 @@ class PostControllerTest {
 
     @Test
     void deletePost() throws Exception {
-        when(authService.getUser(any())).thenReturn(savedUser);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
         when(postService.getById(1L)).thenReturn(savedPost);
         mockMvc.perform(delete("/api/post/" + savedPost.getId())
                         .requestAttr("claims", "{\"sub\":\"testname\"}"))

@@ -5,6 +5,8 @@ import com.demo.app.exception.AppException;
 import com.demo.app.user.User;
 import com.demo.app.user.UserRepository;
 import io.jsonwebtoken.Claims;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,6 +31,12 @@ public class AuthService {
     public User getUser(HttpServletRequest request) {
         final Claims claims = (Claims) request.getAttribute("claims");
         return userRepository.findByName(claims.get("sub", String.class)).orElseThrow(
+                () -> new AppException.UnauthorizedException("Invalid token"));
+    }
+
+    public User getCurrentUser() {
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return userRepository.findByName(authentication.getName()).orElseThrow(
                 () -> new AppException.UnauthorizedException("Invalid token"));
     }
 }

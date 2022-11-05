@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
@@ -31,8 +30,9 @@ public class UserController {
     }
 
     @GetMapping(value = "/me", produces = "application/json")
-    public UserDto getMe(final HttpServletRequest request) {
-        User user = authService.getUser(request);
+    public UserDto getMe() {
+        User user = authService.getCurrentUser();
+        System.out.println(user);
         return userService.getUserInfo(user);
     }
 

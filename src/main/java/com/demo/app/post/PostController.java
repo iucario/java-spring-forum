@@ -5,7 +5,6 @@ import com.demo.app.user.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -20,31 +19,28 @@ public class PostController {
     }
 
     @GetMapping(produces = "application/json")
-    public List<PostDto> getUserPosts(final HttpServletRequest request) {
-        final User user = authService.getUser(request);
-        int offset = 0;
-        if (request.getParameter("offset") != null) {
-            offset = Integer.parseInt(request.getParameter("offset"));
-        }
-        return postService.getUserPosts(user.getId(), offset, 100);
+    public List<PostDto> getUserPosts(@RequestParam Long userId,
+                                      @RequestParam(required = false, defaultValue = "0") Integer offset,
+                                      @RequestParam(required = false, defaultValue = "20") Integer size) {
+        return postService.getUserPosts(userId, offset, size);
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")
-    public PostDto addNewPost(@RequestBody PostDto.PostCreate postCreate, final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public PostDto addNewPost(@RequestBody PostDto.PostCreate postCreate) {
+        final User user = authService.getCurrentUser();
         Post post = new Post(postCreate.title, postCreate.body, user);
         return postService.addPost(post, user);
     }
 
     @PutMapping(consumes = "application/json", produces = "application/json")
-    public PostDto updatePost(@RequestBody PostDto.PostUpdate postUpdate, final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public PostDto updatePost(@RequestBody PostDto.PostUpdate postUpdate) {
+        final User user = authService.getCurrentUser();
         return postService.updatePost(postUpdate, user);
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity deletePost(@PathVariable Long id, final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public ResponseEntity deletePost(@PathVariable Long id) {
+        final User user = authService.getCurrentUser();
         postService.deletePostById(id, user);
         return ResponseEntity.noContent().build();
     }

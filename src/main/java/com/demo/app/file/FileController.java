@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 @RestController
@@ -24,15 +23,14 @@ public class FileController {
     }
 
     @PostMapping("/upload")
-    public FileDto handleFileUpload(@RequestParam("file") MultipartFile file,
-                                    final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public FileDto handleFileUpload(@RequestParam("file") MultipartFile file) {
+        final User user = authService.getCurrentUser();
         return fileService.handleUpload(file, user);
     }
 
     @GetMapping("/list")
-    public List<FileDto> getFiles(final HttpServletRequest request) {
-        User user = authService.getUser(request);
+    public List<FileDto> getFiles() {
+        User user = authService.getCurrentUser();
         return fileService.getAllUserFiles(user.getId());
     }
 
@@ -48,9 +46,8 @@ public class FileController {
     }
 
     @DeleteMapping("/delete/{filename:.+}")
-    public ResponseEntity<String> handleFileDelete(@PathVariable String filename,
-                                                   final HttpServletRequest request) {
-        final User user = authService.getUser(request);
+    public ResponseEntity<String> handleFileDelete(@PathVariable String filename) {
+        final User user = authService.getCurrentUser();
         try {
             fileService.delete(filename, user);
             return ResponseEntity.ok("file deleted");
