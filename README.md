@@ -21,7 +21,7 @@ Technologies: JPA, Hibernate, Spring
 
 ## API
 
-OpenAPI docs: https://localhost:8080/swagger
+OpenAPI docs: http://localhost:8080/swagger
 
 - `/user/register` post
 - `/user/login` post
