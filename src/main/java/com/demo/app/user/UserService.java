@@ -5,6 +5,9 @@ import com.demo.app.auth.AuthService;
 import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.exception.AppException.UserNotFoundException;
+import com.demo.app.favorite.FavUserPost;
+import com.demo.app.favorite.FavUserPostRepository;
+import com.demo.app.post.Post;
 import com.demo.app.user.userStats.UserStats;
 import com.demo.app.user.userStats.UserStatsRepository;
 import org.springframework.stereotype.Service;
@@ -16,15 +19,25 @@ import java.util.List;
 public class UserService {
     private final UserRepository userRepository;
     private final UserStatsRepository userStatsRepository;
+    private final FavUserPostRepository favUserPostRepository;
     private final AuthService authService;
     private final JwtUtil jwtUtil;
 
-    public UserService(UserRepository userRepository, UserStatsRepository userStatsRepository, AuthService authService,
+    public UserService(UserRepository userRepository, UserStatsRepository userStatsRepository,
+                       FavUserPostRepository favUserPostRepository, AuthService authService,
                        JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.userStatsRepository = userStatsRepository;
+        this.favUserPostRepository = favUserPostRepository;
         this.authService = authService;
         this.jwtUtil = jwtUtil;
+    }
+
+    public List<Post> getUserFavorites(Long userId) {
+        return favUserPostRepository.findByUser(userId)
+                .stream()
+                .map(FavUserPost::getPost)
+                .toList();
     }
 
     public UserStats getUserStats(Long userId) {

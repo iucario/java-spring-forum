@@ -4,7 +4,9 @@ import com.demo.app.auth.AuthService;
 import com.demo.app.auth.JwtUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.exception.AppException.UserExistsException;
-import com.demo.app.post.PostRepository;
+import com.demo.app.favorite.FavUserPost;
+import com.demo.app.favorite.FavUserPostRepository;
+import com.demo.app.post.Post;
 import com.demo.app.user.userStats.UserStats;
 import com.demo.app.user.userStats.UserStatsRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.jgroups.util.Util.assertEquals;
@@ -28,7 +31,7 @@ class UserServiceTest {
     @Mock
     UserRepository userRepository;
     @Mock
-    PostRepository postRepository;
+    FavUserPostRepository favUserPostRepository;
     @Mock
     UserStatsRepository userStatsRepository;
     @Mock
@@ -38,6 +41,7 @@ class UserServiceTest {
     private String hashedPassword;
     private UserService userService;
     private User savedUser;
+    private Post savedPost;
     private UserStats savedUserStats;
 
     @BeforeEach
@@ -45,9 +49,11 @@ class UserServiceTest {
         jwtUtil = new JwtUtil("secret123456789012345678901234567890");
         password = "testPass123!@#";
         hashedPassword = "$2b$12$C03E3lduNya6x8TG4WAEje8nrqHd2qaqn7rDbUn9SLCnjaA7.j/GC";
-        userService = new UserService(userRepository, userStatsRepository, authService, jwtUtil);
+        userService = new UserService(userRepository, userStatsRepository, favUserPostRepository, authService, jwtUtil);
         savedUser = new User("testname", hashedPassword);
         savedUser.setId(1L);
+        savedPost = new Post("title", "post body", savedUser);
+        savedPost.setId(1L);
         savedUserStats = new UserStats(savedUser);
     }
 
@@ -147,5 +153,16 @@ class UserServiceTest {
     void deleteUserById() {
         userService.deleteUserById(savedUser.getId());
         verify(userRepository).deleteById(savedUser.getId());
+    }
+
+    @Test
+    void getUserFavorites() {
+        List<FavUserPost> favList = List.of(new FavUserPost(savedUser, savedPost));
+        when(favUserPostRepository.findByUser(savedUser.getId())).thenReturn(favList);
+
+        List<Post> actual = userService.getUserFavorites(savedUser.getId());
+
+        verify(favUserPostRepository).findByUser(savedUser.getId());
+        assertEquals(favList.get(0).getPost(), actual.get(0));
     }
 }
