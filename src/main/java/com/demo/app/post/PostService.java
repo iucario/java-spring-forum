@@ -73,8 +73,9 @@ public class PostService {
         return post;
     }
 
-    private PostDto.PostListDto createPostListDto(Post post) {
+    public PostDto.PostListDto createPostListDto(Post post) {
         UserDto author = userService.getUserInfo(post.getUser());
+
         return new PostDto.PostListDto(post, author);
     }
 }

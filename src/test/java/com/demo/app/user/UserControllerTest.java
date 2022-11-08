@@ -1,6 +1,9 @@
 package com.demo.app.user;
 
 import com.demo.app.auth.AuthService;
+import com.demo.app.post.Post;
+import com.demo.app.post.PostDto;
+import com.demo.app.post.PostService;
 import com.demo.app.user.userStats.UserStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
@@ -14,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -30,20 +35,25 @@ class UserControllerTest {
     AuthService authService;
     @MockBean
     UserService userService;
+    @MockBean
+    PostService postService;
     @Autowired
     ObjectMapper objectMapper;
     private User savedUser;
     private UserStats userStats;
+    private Post savedPost;
 
     @BeforeEach
     void setUp() {
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         userStats = new UserStats(savedUser);
+        savedPost = new Post("title", "post body", savedUser);
+        savedPost.setId(1L);
     }
 
     @Test
-    void canLogin() throws Exception {
+    void login() throws Exception {
         UserDto.UserLogin userLogin = new UserDto.UserLogin("testname", "Greatpassword1!");
         UserDto.LoginResponse result = new UserDto.LoginResponse("token");
         when(userService.login(any(UserDto.UserLogin.class))).thenReturn(result);
@@ -67,7 +77,7 @@ class UserControllerTest {
     }
 
     @Test
-    void canRegister() throws Exception {
+    void register() throws Exception {
         UserDto.UserCreate userCreate = new UserDto.UserCreate("testname", "Greatpassword1!");
         UserDto result = new UserDto(savedUser, userStats);
         when(userService.createUser(userCreate)).thenReturn(result);
@@ -87,7 +97,7 @@ class UserControllerTest {
     }
 
     @Test
-    void canGetMe() throws Exception {
+    void getMe() throws Exception {
         UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserInfo(any())).thenReturn(result);
         mockMvc.perform(get("/user/me"))
@@ -97,11 +107,21 @@ class UserControllerTest {
     }
 
     @Test
-    void canGetUserProfile() throws Exception {
+    void getUserProfile() throws Exception {
         UserDto result = new UserDto(savedUser, userStats);
         when(userService.getUserProfile(any())).thenReturn(result);
         mockMvc.perform(get("/user/profile/1"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(result)));
+    }
+
+    @Test
+    void getUserFavorites() throws Exception {
+        UserDto author = new UserDto(savedUser, userStats);
+        when(postService.createPostListDto(any())).thenReturn(new PostDto.PostListDto(savedPost, author));
+        when(userService.getUserFavorites(any())).thenReturn(List.of(savedPost));
+        mockMvc.perform(get("/user/1/favorites"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title", Matchers.is("title")));
     }
 }
