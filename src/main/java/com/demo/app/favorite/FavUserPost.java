@@ -50,4 +50,8 @@ public class FavUserPost {
     public void setPost(Post post) {
         this.post = post;
     }
+
+    public Long getId() {
+        return id;
+    }
 }

@@ -1,6 +1,7 @@
 package com.demo.app.post;
 
 import com.demo.app.exception.AppException;
+import com.demo.app.favorite.FavUserPostRepository;
 import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
@@ -14,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 import java.util.Optional;
 
-import static org.jgroups.util.Util.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -26,13 +27,15 @@ public class PostServiceTest {
     PostRepository postRepository;
     @Mock
     UserService userService;
+    @Mock
+    FavUserPostRepository favUserPostRepository;
     private PostService postService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository, userService);
+        postService = new PostService(postRepository, userService, favUserPostRepository);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
@@ -105,12 +108,14 @@ public class PostServiceTest {
 
     @Test
     void updatePost() {
-        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("updated body", savedPost.getId());
-        when(postRepository.findById(savedPost.getId())).thenReturn(Optional.ofNullable(savedPost));
+        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("update", savedPost.getId(), "updated body");
         savedPost.setBody(postUpdate.body);
+        when(postRepository.findById(savedPost.getId())).thenReturn(Optional.ofNullable(savedPost));
         when(postRepository.save(any(Post.class))).thenReturn(savedPost);
-        PostDto updatedPost = postService.updatePost(postUpdate, savedUser);
-        assertEquals("updated body", updatedPost.body);
+
+        PostDto actual = postService.updatePost(postUpdate, savedUser);
+
+        assertEquals("updated body", actual.body);
     }
 
     @Test
@@ -120,5 +125,16 @@ public class PostServiceTest {
         List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
 
         verify(postRepository).findPosts(0, 10);
+    }
+
+    @Test
+    void favoritePost() {
+        when(postRepository.findById(savedPost.getId())).thenReturn(Optional.of(savedPost));
+        when(favUserPostRepository.save(any())).thenReturn(null);
+
+        postService.favoritePost(savedUser, savedPost.getId());
+
+        verify(postRepository).findById(savedPost.getId());
+        verify(favUserPostRepository).save(any());
     }
 }

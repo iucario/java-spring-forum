@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -82,10 +83,11 @@ class PostControllerTest {
     void updatePost() throws Exception {
         PostDto result = new PostDto(savedPost, author);
         result.body = "body";
-        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("body", 1L);
+        PostDto.PostUpdate postUpdate = new PostDto.PostUpdate("update", 1L, "body");
         when(postService.getById(1L)).thenReturn(savedPost);
         when(postService.updatePost(any(), any())).thenReturn(result);
         when(authService.getCurrentUser()).thenReturn(savedUser);
+
         mockMvc.perform(put("/api/post")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postUpdate)))
@@ -94,6 +96,34 @@ class PostControllerTest {
                 .andExpect(jsonPath("$.title", Matchers.is("title")))
                 .andExpect(jsonPath("$.body", Matchers.is("body")))
                 .andExpect(jsonPath("$.author.id", Matchers.is(1)));
+    }
+
+    @Test
+    void favoritePost() throws Exception {
+        PostDto.PostUpdate postFav = new PostDto.PostUpdate("favorite", 1L, null);
+        when(postService.getById(1L)).thenReturn(savedPost);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
+
+        mockMvc.perform(put("/api/post")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postFav)))
+                .andExpect(status().isOk());
+
+        verify(postService).favoritePost(savedUser, 1L);
+    }
+
+    @Test
+    void unfavoritePost() throws Exception {
+        PostDto.PostUpdate postFav = new PostDto.PostUpdate("unfavorite", 1L, null);
+        when(postService.getById(1L)).thenReturn(savedPost);
+        when(authService.getCurrentUser()).thenReturn(savedUser);
+
+        mockMvc.perform(put("/api/post")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(postFav)))
+                .andExpect(status().isOk());
+
+        verify(postService).unfavoritePost(savedUser, 1L);
     }
 
     @Test

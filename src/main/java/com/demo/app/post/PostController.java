@@ -35,7 +35,19 @@ public class PostController {
     @PutMapping(consumes = "application/json", produces = "application/json")
     public PostDto updatePost(@RequestBody PostDto.PostUpdate postUpdate) {
         final User user = authService.getCurrentUser();
-        return postService.updatePost(postUpdate, user);
+        switch (postUpdate.action) {
+            case "favorite":
+                postService.favoritePost(user, postUpdate.id);
+                break;
+            case "unfavorite":
+                postService.unfavoritePost(user, postUpdate.id);
+                break;
+            case "update":
+                return postService.updatePost(postUpdate, user);
+            default:
+                break;
+        }
+        return null;
     }
 
     @DeleteMapping(value = "/{id}", produces = "application/json")
@@ -44,4 +56,5 @@ public class PostController {
         postService.deletePostById(id, user);
         return ResponseEntity.noContent().build();
     }
+
 }

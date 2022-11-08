@@ -1,6 +1,8 @@
 package com.demo.app.post;
 
 import com.demo.app.exception.AppException;
+import com.demo.app.favorite.FavUserPost;
+import com.demo.app.favorite.FavUserPostRepository;
 import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
@@ -13,10 +15,13 @@ import java.util.List;
 public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
+    private final FavUserPostRepository favUserPostRepository;
 
-    public PostService(PostRepository postRepository, UserService userService) {
+    public PostService(PostRepository postRepository, UserService userService,
+                       FavUserPostRepository favUserPostRepository) {
         this.postRepository = postRepository;
         this.userService = userService;
+        this.favUserPostRepository = favUserPostRepository;
     }
 
     public List<PostDto.PostListDto> getPostList(final int offset, final int limit) {
@@ -65,17 +70,31 @@ public class PostService {
         return new PostDto(updatedPost, author);
     }
 
+    public PostDto.PostListDto createPostListDto(Post post) {
+        UserDto author = userService.getUserInfo(post.getUser());
+        return new PostDto.PostListDto(post, author);
+    }
+
+    public void favoritePost(User user, Long postId) {
+        Post post = getById(postId);
+        if (!favUserPostRepository.existsByUserAndPost(user, post)) {
+            favUserPostRepository.save(new FavUserPost(user, post));
+        }
+    }
+
+    public void unfavoritePost(User user, Long postId) {
+        Post post = getById(postId);
+        List<FavUserPost> favList = favUserPostRepository.findByUserAndPost(user, post);
+        if (favList.size() > 0) {
+            favUserPostRepository.deleteById(favList.get(0).getId());
+        }
+    }
+
     private Post getUserPost(Long id, User user) {
         Post post = getById(id);
         if (!post.getUser().getId().equals(user.getId())) {
             throw new AppException.UnauthorizedException();
         }
         return post;
-    }
-
-    public PostDto.PostListDto createPostListDto(Post post) {
-        UserDto author = userService.getUserInfo(post.getUser());
-
-        return new PostDto.PostListDto(post, author);
     }
 }
