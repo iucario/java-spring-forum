@@ -10,7 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,18 +32,23 @@ public class PostServiceTest {
     UserService userService;
     @Mock
     FavUserPostRepository favUserPostRepository;
+    @Mock
+    ListOperations<String, Object> listOperations;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
     private PostService postService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository, userService, favUserPostRepository);
+        postService = new PostService(postRepository, userService, favUserPostRepository, redisTemplate);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
+        Mockito.lenient().when(redisTemplate.opsForList()).thenReturn(listOperations);
     }
 
     @Test
@@ -125,6 +133,15 @@ public class PostServiceTest {
         List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
 
         verify(postRepository).findPosts(0, 10);
+    }
+
+    @Test
+    void get_post_list_from_cache_when_has_key() {
+        when(redisTemplate.hasKey("postList")).thenReturn(true);
+
+        List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
+
+        verify(listOperations).range("postList", 0, 9);
     }
 
     @Test

@@ -19,10 +19,16 @@ public class PostController {
     }
 
     @GetMapping(produces = "application/json")
-    public List<PostDto> getUserPosts(@RequestParam Long userId,
+    List<PostDto.PostListDto> getPostList(@RequestParam(required = false) Integer offset,
+                                          @RequestParam(required = false) Integer size) {
+        return postService.getPostList(offset, size);
+    }
+
+    @GetMapping(value = "/user/{id}", produces = "application/json")
+    public List<PostDto> getUserPosts(@PathVariable Long id,
                                       @RequestParam(required = false, defaultValue = "0") Integer offset,
                                       @RequestParam(required = false, defaultValue = "20") Integer size) {
-        return postService.getUserPosts(userId, offset, size);
+        return postService.getUserPosts(id, offset, size);
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")

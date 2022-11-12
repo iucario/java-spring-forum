@@ -6,6 +6,8 @@ import com.demo.app.favorite.FavUserPostRepository;
 import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
+import org.slf4j.Logger;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -13,22 +15,35 @@ import java.util.List;
 
 @Service
 public class PostService {
+    final Logger logger = org.slf4j.LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final UserService userService;
     private final FavUserPostRepository favUserPostRepository;
+    private RedisTemplate<String, Object> redisTemplate;
 
     public PostService(PostRepository postRepository, UserService userService,
-                       FavUserPostRepository favUserPostRepository) {
+                       FavUserPostRepository favUserPostRepository, RedisTemplate<String, Object> redisTemplate) {
         this.postRepository = postRepository;
         this.userService = userService;
         this.favUserPostRepository = favUserPostRepository;
+        this.redisTemplate = redisTemplate;
     }
 
     public List<PostDto.PostListDto> getPostList(final int offset, final int limit) {
-        return postRepository.findPosts(offset, limit)
-                .stream()
-                .map(this::createPostListDto)
-                .toList();
+        if (Boolean.TRUE.equals(redisTemplate.hasKey("postList"))) {
+            List<Object> posts = redisTemplate.opsForList().range("postList", offset, offset + limit - 1);
+            logger.info("Key 'postList' found in cache");
+            logger.info("Posts %s".formatted(posts));
+            return posts.stream().map(PostDto.PostListDto.class::cast).toList();
+        } else {
+            List<PostDto.PostListDto> postList = postRepository.findPosts(offset, limit)
+                    .stream()
+                    .map(this::createPostListDto)
+                    .toList();
+            logger.info("Initialize key 'postList' to the cache");
+            redisTemplate.opsForList().rightPushAll("postList", postList.toArray());
+            return postList;
+        }
     }
 
     public List<PostDto> getUserPosts(Long userId, int offset, int limit) {

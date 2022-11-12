@@ -14,6 +14,9 @@ public class UserDto {
     public Long commentCount;
     public Long fileCount;
 
+    public UserDto() {
+    }
+
     public UserDto(final User user) {
         this.id = user.getId();
         this.name = user.getName();

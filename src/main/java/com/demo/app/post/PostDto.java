@@ -5,6 +5,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.Pattern;
+import java.io.Serializable;
 
 public class PostDto {
     public Long id;
@@ -30,13 +31,16 @@ public class PostDto {
                 title, body, createdAt, updatedAt, author.name);
     }
 
-    public static class PostListDto {
+    public static class PostListDto implements Serializable {
         public Long id;
         public String title;
         public Long createdAt;
         public Long updatedAt;
         public UserDto author;
         public Long commentCount = 0L;
+
+        public PostListDto() {
+        }
 
         public PostListDto(Post post, UserDto author) {
             this.id = post.getId();
