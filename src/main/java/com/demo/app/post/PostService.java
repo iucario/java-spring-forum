@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.comment.CommentDto;
 import com.demo.app.exception.AppException;
 import com.demo.app.favorite.FavUserPost;
 import com.demo.app.favorite.FavUserPostRepository;
@@ -7,11 +8,13 @@ import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
 import org.slf4j.Logger;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class PostService {
@@ -29,20 +32,17 @@ public class PostService {
         this.redisTemplate = redisTemplate;
     }
 
-    public List<PostDto.PostListDto> getPostList(final int offset, final int limit) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey("postList"))) {
-            List<Object> posts = redisTemplate.opsForList().range("postList", offset, offset + limit - 1);
-            logger.info("Key 'postList' found in cache");
-            logger.info("Posts %s".formatted(posts));
-            return posts.stream().map(PostDto.PostListDto.class::cast).toList();
-        } else {
-            List<PostDto.PostListDto> postList = postRepository.findPosts(offset, limit)
+    public List<PostDto.PostListDto> getPostList(final int offset, final int size) {
+        List<PostDto.PostListDto> posts = cacheGetPostList();
+        if (posts.size() < offset + size) {
+            // Part or all of the posts are not in the cache, then get all from the database
+            List<PostDto.PostListDto> postList = postRepository.findPosts(offset, size)
                     .stream()
                     .map(this::createPostListDto)
                     .toList();
-            logger.info("Initialize key 'postList' to the cache");
-            redisTemplate.opsForList().rightPushAll("postList", postList.toArray());
             return postList;
+        } else {
+            return posts.subList(offset, offset + size);
         }
     }
 
@@ -52,6 +52,15 @@ public class PostService {
                 .stream()
                 .map((post -> new PostDto(post, author)))
                 .toList();
+    }
+
+    public PostDto.PostDetail getPostDetail(Long id) {
+        Post post = getById(id);
+        List<CommentDto> comments = post.getComments().stream().map(comment -> {
+            UserDto author = userService.getUserInfo(comment.getUser());
+            return new CommentDto(comment, author);
+        }).toList();
+        return new PostDto.PostDetail(post, post.getUser(), comments);
     }
 
     public Post getById(Long id) {
@@ -65,6 +74,8 @@ public class PostService {
         Post saved = postRepository.save(post);
         user.incrementPostCount();
         UserDto author = userService.saveUserStats(user.getUserStats());
+        // TODO: Add the post content to cache
+        cacheAddPost(post);
         return new PostDto(saved, author);
     }
 
@@ -74,14 +85,16 @@ public class PostService {
         postRepository.deleteById(id);
         user.decrementPostCount();
         userService.saveUserStats(user.getUserStats());
+        cacheDeletePost(id);
     }
 
-    public PostDto updatePost(PostDto.PostUpdate postUpdate, User user) {
-        Post post = getUserPost(postUpdate.id, user);
-        post.setBody(postUpdate.body);
+    public PostDto updatePost(PostDto.PostUpdate update, User user) {
+        Post post = getUserPost(update.id, user);
+        post.setBody(update.body);
         post.updateTime();
         Post updatedPost = postRepository.save(post);
         UserDto author = userService.getUserInfo(user);
+        cacheUpdatePost(update, updatedPost);
         return new PostDto(updatedPost, author);
     }
 
@@ -112,4 +125,54 @@ public class PostService {
         }
         return post;
     }
+
+    /**
+     * Add the last 100 active posts to the cache. Mostly not used because the cache should be updated
+     * when a post's activeAt is updated.
+     */
+    private void cachePostList() {
+        List<PostDto.PostListDto> postList = postRepository.findPosts(0, 100)
+                .stream()
+                .map(this::createPostListDto)
+                .toList();
+        logger.info("Initialize key 'postList' to the cache");
+        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            for (PostDto.PostListDto postListDto : postList) {
+                redisTemplate.opsForZSet().add("postList", postListDto, postListDto.activeAt);
+            }
+            return null;
+        });
+    }
+
+    private void cacheAddPost(Post post) {
+        PostDto.PostDetail postDetail = new PostDto.PostDetail(post, post.getUser(), List.of());
+        redisTemplate.opsForZSet().add("postListIndex", post.getId(), post.getActiveAt());
+        redisTemplate.opsForSet().add("postList:%d".formatted(post.getId()), createPostListDto(post));
+        redisTemplate.opsForSet().add("post:%d".formatted(post.getId()), postDetail);
+    }
+
+    private List<PostDto.PostListDto> cacheGetPostList() {
+        List<Object> postList = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
+            Set<Object> postListIndex = redisTemplate.opsForZSet().range("postListIndex", 0, 100);
+            for (Object postId : postListIndex) {
+                redisTemplate.opsForSet().members("postList:%d".formatted(postId));
+            }
+            return null;
+        });
+        return postList.stream().map(PostDto.PostListDto.class::cast).toList();
+    }
+
+    private void cacheDeletePost(Long id) {
+        final String postListKey = "postList:%d";
+        final String postKey = "post:%d";
+        redisTemplate.opsForZSet().remove("postListIndex", id);
+        redisTemplate.delete(postListKey.formatted(id));
+        redisTemplate.delete(postKey.formatted(id));
+    }
+
+    private void cacheUpdatePost(PostDto.PostUpdate update, Post post) {
+        cacheDeletePost(update.id);
+        cacheAddPost(post);
+    }
+
 }

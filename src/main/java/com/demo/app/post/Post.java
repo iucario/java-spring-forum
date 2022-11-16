@@ -1,10 +1,14 @@
 package com.demo.app.post;
 
+import com.demo.app.comment.Comment;
+import com.demo.app.favorite.FavUserPost;
 import com.demo.app.user.User;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "posts")
@@ -19,12 +23,26 @@ public class Post implements Serializable {
     private Long createdAt;
     @Column(name = "updated_at", columnDefinition = "BIGINT")
     private Long updatedAt;
+    @Column(name = "active_at", columnDefinition = "BIGINT")
+    private Long activeAt; // last time comment was added
 
     @ManyToOne
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
-    protected Post() {
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY)
+    private List<Comment> comments;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private Set<FavUserPost> favUserPosts;
+
+    /* FIXME:
+    org.postgresql.util.PSQLException: ERROR: update or delete on table "posts" violates foreign key constraint
+    "fk6v7jugcdugcmtfyhd7sdxg69c" on table "fav_user_post"
+  Detail: Key (id)=(202) is still referenced from table "fav_user_post".
+     */
+
+    public Post() {
     }
 
     public Post(String title, String body, User user) {
@@ -34,12 +52,13 @@ public class Post implements Serializable {
         final long timestamp = new Date().getTime();
         this.createdAt = timestamp;
         this.updatedAt = timestamp;
+        this.activeAt = timestamp;
     }
 
     @Override
     public String toString() {
-        return String.format("Post[post_id=%d, body=%s, created_at=%d, updated_at=%d, user=%s]", id,
-                body, createdAt, updatedAt, user.getName());
+        return String.format("Post[post_id=%d, body=%s, created_at=%d, updated_at=%d, activeAt=%d, user=%s]", id,
+                body, createdAt, updatedAt, activeAt, user.getName());
     }
 
     public Long getId() {
@@ -52,10 +71,6 @@ public class Post implements Serializable {
 
     public String getBody() {
         return body;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public void setBody(String body) {
@@ -80,5 +95,25 @@ public class Post implements Serializable {
 
     public String getTitle() {
         return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Long getActiveAt() {
+        return activeAt;
+    }
+
+    public void setActiveAt(Long activeAt) {
+        this.activeAt = activeAt;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }

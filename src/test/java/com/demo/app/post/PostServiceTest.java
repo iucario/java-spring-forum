@@ -12,8 +12,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.util.List;
 import java.util.Optional;
@@ -21,8 +21,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -33,7 +32,7 @@ public class PostServiceTest {
     @Mock
     FavUserPostRepository favUserPostRepository;
     @Mock
-    ListOperations<String, Object> listOperations;
+    ZSetOperations<String, Object> zSetOperations;
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
     private PostService postService;
@@ -48,7 +47,7 @@ public class PostServiceTest {
         savedUser.setUserStats(new UserStats(savedUser));
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
-        Mockito.lenient().when(redisTemplate.opsForList()).thenReturn(listOperations);
+        Mockito.lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
     }
 
     @Test
@@ -128,11 +127,11 @@ public class PostServiceTest {
 
     @Test
     void getPostList() {
-        when(postRepository.findPosts(0, 10)).thenReturn(List.of(savedPost));
+        when(postRepository.findPosts(eq(0), anyInt())).thenReturn(List.of(savedPost));
 
         List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
 
-        verify(postRepository).findPosts(0, 10);
+        verify(postRepository).findPosts(0, 100);
     }
 
     @Test
@@ -141,7 +140,7 @@ public class PostServiceTest {
 
         List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
 
-        verify(listOperations).range("postList", 0, 9);
+        verify(zSetOperations).range("postList", 0, 9);
     }
 
     @Test
