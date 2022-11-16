@@ -1,13 +1,11 @@
 package com.demo.app.post;
 
 import com.demo.app.comment.CommentDto;
-import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.Pattern;
-import java.io.Serializable;
 import java.util.List;
 
 public class PostDto {
@@ -18,7 +16,21 @@ public class PostDto {
     public Long updatedAt;
     public Long activeAt;
     public UserDto author;
-    public Long commentCount = 0L;
+    public int commentCount = 0;
+
+    public PostDto() {
+    }
+
+    public PostDto(Post post) {
+        this.id = post.getId();
+        this.title = post.getTitle();
+        this.body = post.getBody();
+        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
+        this.activeAt = post.getActiveAt();
+        this.author = new UserDto(post.getUser());
+        this.commentCount = 0;
+    }
 
     public PostDto(Post post, UserDto author) {
         this.id = post.getId();
@@ -28,43 +40,13 @@ public class PostDto {
         this.updatedAt = post.getUpdatedAt();
         this.activeAt = post.getActiveAt();
         this.author = author;
+        this.commentCount = 0;
     }
 
     @Override
     public String toString() {
         return String.format("PostDto[id=%d, title=%s, body=%s, created_at=%d, updated_at=%d, active_at=%d, author=%s]"
                 , id, title, body, createdAt, updatedAt, activeAt, author.name);
-    }
-
-    /**
-     * The schema for the post list in the front page. Post and comment content is not included.
-     */
-    public static class PostListDto implements Serializable {
-        public Long id;
-        public String title;
-        public Long createdAt;
-        public Long updatedAt;
-        public Long activeAt;
-        public UserDto author;
-        public Long commentCount = 0L;
-
-        public PostListDto() {
-        }
-
-        public PostListDto(Post post, UserDto author) {
-            this.id = post.getId();
-            this.title = post.getTitle();
-            this.createdAt = post.getCreatedAt();
-            this.updatedAt = post.getUpdatedAt();
-            this.activeAt = post.getActiveAt();
-            this.author = author;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("PostListDto[id=%d, title=%s created_at=%d, updated_at=%d, author=%s]", id,
-                    title, createdAt, updatedAt, author.name);
-        }
     }
 
     /**
@@ -78,22 +60,22 @@ public class PostDto {
         public Long updatedAt;
         public Long activeAt;
         public UserDto author;
-        public Long commentCount = 0L;
+        public int commentCount = 0;
         public List<CommentDto> comments;
 
         public PostDetail() {
         }
 
-        public PostDetail(Post post, User user, List<CommentDto> comments) {
+        public PostDetail(Post post, List<CommentDto> comments) {
             this.id = post.getId();
             this.title = post.getTitle();
             this.body = post.getBody();
             this.createdAt = post.getCreatedAt();
             this.updatedAt = post.getUpdatedAt();
             this.activeAt = post.getActiveAt();
-            this.author = new UserDto(user);
+            this.author = new UserDto(post.getUser());
             this.comments = comments;
-            this.commentCount = Long.valueOf(comments.size());
+            this.commentCount = comments.size();
         }
 
         @Override

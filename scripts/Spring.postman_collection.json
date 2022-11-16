@@ -1484,7 +1484,7 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/post/{{postId}}",
+              "raw": "{{host}}/api/post/{{postId}}?page=1",
               "host": [
                 "{{host}}"
               ],
@@ -1492,6 +1492,12 @@
                 "api",
                 "post",
                 "{{postId}}"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
               ]
             }
           },
@@ -2044,11 +2050,15 @@
                   "pm.test(\"Is array\", () => {\r",
                   "    let data = pm.response.json()\r",
                   "    pm.expect(data).to.be.an('array')\r",
+                  "    pm.collectionVariables.set('postList', data)\r",
+                  "    if (data.length)\r",
+                  "        pm.collectionVariables.set('postId', data[0].id)\r",
                   "})\r",
                   "pm.test('Has N posts', () => {\r",
                   "    const postCount = pm.collectionVariables.get('profile-admin').postCount + \r",
                   "                    pm.collectionVariables.get('profile-otheruser').postCount\r",
                   "    pm.expect(pm.response.json().length).to.equal(postCount-1)\r",
+                  "    \r",
                   "})"
                 ],
                 "type": "text/javascript"
@@ -2103,6 +2113,7 @@
                   "pm.test(\"Has keys\", () => {\r",
                   "    const data = pm.response.json()\r",
                   "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
+                  "    pm.collectionVariables.set('commentId', data.id)\r",
                   "})\r",
                   "\r",
                   "pm.test(\"Increase comment count\", () => {\r",
@@ -2141,7 +2152,7 @@
           "response": []
         },
         {
-          "name": "comment get from post 2",
+          "name": "comment get from post",
           "event": [
             {
               "listen": "test",
@@ -2164,7 +2175,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{host}}/api/comment?postId=2&offset=0",
+              "raw": "{{host}}/api/comment?postId={{postId}}&offset=0",
               "host": [
                 "{{host}}"
               ],
@@ -2175,7 +2186,7 @@
               "query": [
                 {
                   "key": "postId",
-                  "value": "2"
+                  "value": "{{postId}}"
                 },
                 {
                   "key": "offset",
@@ -2220,7 +2231,7 @@
             "header": [],
             "body": {
               "mode": "raw",
-              "raw": "{\r\n    \"id\": 1,\r\n    \"body\": \"comment updated\"\r\n}",
+              "raw": "{\r\n    \"id\": {{commentId}},\r\n    \"body\": \"comment updated\"\r\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -2278,14 +2289,14 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/comment/1",
+              "raw": "{{host}}/api/comment/{{commentId}}",
               "host": [
                 "{{host}}"
               ],
               "path": [
                 "api",
                 "comment",
-                "1"
+                "{{commentId}}"
               ]
             }
           },
@@ -2319,14 +2330,14 @@
               }
             },
             "url": {
-              "raw": "{{host}}/api/comment/1",
+              "raw": "{{host}}/api/comment/{{commentId}}",
               "host": [
                 "{{host}}"
               ],
               "path": [
                 "api",
                 "comment",
-                "1"
+                "{{commentId}}"
               ]
             }
           },
@@ -2705,317 +2716,6 @@
           "response": []
         }
       ]
-    },
-    {
-      "name": "Test Redis",
-      "item": [
-        {
-          "name": "user/register Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 201\", function () {\r",
-                  "    pm.response.to.have.status(201);\r",
-                  "});\r",
-                  "pm.test(\"Has keys\", function () {\r",
-                  "    pm.expect(pm.response.json()).to.have.keys('id', 'name', 'createdAt', 'postCount', 'commentCount', 'fileCount')\r",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"admin\",\r\n    \"password\": \"Password111!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{host}}/user/register",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "user",
-                "register"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "user/login Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "pm.test(\"Keys: token\", function () {\r",
-                  "    var jsonData = pm.response.json();\r",
-                  "    pm.expect(jsonData).to.have.all.keys(\"token\");\r",
-                  "    pm.collectionVariables.set(\"token\", jsonData.token);\r",
-                  "});"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"admin\",\r\n    \"password\": \"Password111!\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{host}}/user/login",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "user",
-                "login"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "post  add Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "pm.test(\"Is a post\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.be.an('object')\r",
-                  "    pm.collectionVariables.set('postId', data.id)\r",
-                  "})\r",
-                  "pm.test(\"Have keys\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
-                  "})\r",
-                  "pm.test(\"Increment postCount\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    const userBefore = pm.collectionVariables.get('profile-admin')\r",
-                  "    pm.expect(data.author.postCount).to.equal(userBefore.postCount+1)\r",
-                  "    pm.collectionVariables.set('profile-admin', data.author)\r",
-                  "})"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"title\": \"Hello World\",\r\n    \"body\": \"changed to public\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{host}}/api/post",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "post"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "post  add Copy 2",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "pm.test(\"Is a post\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.be.an('object')\r",
-                  "    pm.collectionVariables.set('postId', data.id)\r",
-                  "})\r",
-                  "pm.test(\"Have keys\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.have.all.keys('id', 'title', 'body', 'createdAt', 'updatedAt', 'author', 'commentCount')\r",
-                  "})\r",
-                  "pm.test(\"Increment postCount\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    const userBefore = pm.collectionVariables.get('profile-admin')\r",
-                  "    pm.expect(data.author.postCount).to.equal(userBefore.postCount+1)\r",
-                  "    pm.collectionVariables.set('profile-admin', data.author)\r",
-                  "})"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"title\": \"Hello World\",\r\n    \"body\": \"changed to public\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{host}}/api/post",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "post"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "post list Copy",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "pm.test(\"Is array\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.be.an('array')\r",
-                  "})\r",
-                  "pm.test('Has 2 posts', () => {\r",
-                  "    pm.expect(pm.response.json().length).to.equal(2)\r",
-                  "})"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{host}}/api/post?offset=0&size=20",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "post"
-              ],
-              "query": [
-                {
-                  "key": "offset",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
-                }
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "post list from cache",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test(\"Status code is 200\", function () {\r",
-                  "    pm.response.to.have.status(200);\r",
-                  "});\r",
-                  "pm.test(\"Is array\", () => {\r",
-                  "    let data = pm.response.json()\r",
-                  "    pm.expect(data).to.be.an('array')\r",
-                  "})\r",
-                  "pm.test('Has 2 posts', () => {\r",
-                  "    pm.expect(pm.response.json().length).to.equal(2)\r",
-                  "})"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{host}}/api/post?offset=0&size=20",
-              "host": [
-                "{{host}}"
-              ],
-              "path": [
-                "api",
-                "post"
-              ],
-              "query": [
-                {
-                  "key": "offset",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
-                }
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
     }
   ],
   "auth": {
@@ -3093,6 +2793,14 @@
     },
     {
       "key": "profile-admin",
+      "value": ""
+    },
+    {
+      "key": "postList",
+      "value": ""
+    },
+    {
+      "key": "commentId",
       "value": ""
     }
   ]

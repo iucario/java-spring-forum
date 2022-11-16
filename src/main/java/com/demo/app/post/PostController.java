@@ -1,6 +1,8 @@
 package com.demo.app.post;
 
 import com.demo.app.auth.AuthService;
+import com.demo.app.comment.CommentDto;
+import com.demo.app.comment.CommentService;
 import com.demo.app.user.User;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -15,15 +17,17 @@ public class PostController {
 
     private final PostService postService;
     private final AuthService authService;
+    private final CommentService commentService;
 
-    public PostController(PostService postService, AuthService authService) {
+    public PostController(PostService postService, AuthService authService, CommentService commentService) {
         this.postService = postService;
         this.authService = authService;
+        this.commentService = commentService;
     }
 
     @GetMapping(produces = "application/json")
-    public List<PostDto.PostListDto> getPostList(@RequestParam(required = false) Integer offset,
-                                                 @RequestParam(required = false) Integer size) {
+    public List<PostDto> getPostList(@RequestParam(required = false) Integer offset,
+                                     @RequestParam(required = false) Integer size) {
         return postService.getPostList(offset, size);
     }
 
@@ -37,8 +41,13 @@ public class PostController {
     }
 
     @GetMapping(value = "/{id}", produces = "application/json")
-    public PostDto.PostDetail getPostDetail(@PathVariable Long id) {
-        return postService.getPostDetail(id);
+    public PostDto.PostDetail getPostDetail(@PathVariable Long id,
+                                            @RequestParam(required = false, defaultValue = "1") Integer page) {
+        int size = 20;
+        int offset = Math.max(0, page - 1) * size;
+        Post post = postService.getById(id);
+        List<CommentDto> comments = commentService.getByPostId(id, offset, size);
+        return new PostDto.PostDetail(post, comments);
     }
 
     @PostMapping(consumes = "application/json", produces = "application/json")

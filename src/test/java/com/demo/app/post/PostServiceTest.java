@@ -129,7 +129,7 @@ public class PostServiceTest {
     void getPostList() {
         when(postRepository.findPosts(eq(0), anyInt())).thenReturn(List.of(savedPost));
 
-        List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
+        List<PostDto> postList = postService.getPostList(0, 10);
 
         verify(postRepository).findPosts(0, 100);
     }
@@ -138,7 +138,7 @@ public class PostServiceTest {
     void get_post_list_from_cache_when_has_key() {
         when(redisTemplate.hasKey("postList")).thenReturn(true);
 
-        List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
+        List<PostDto> postList = postService.getPostList(0, 10);
 
         verify(zSetOperations).range("postList", 0, 9);
     }

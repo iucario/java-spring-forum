@@ -1,6 +1,5 @@
 package com.demo.app.comment;
 
-import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 
 public class CommentDto {
@@ -15,14 +14,14 @@ public class CommentDto {
     protected CommentDto() {
     }
 
-    public CommentDto(Comment comment, User user) {
+    public CommentDto(Comment comment) {
         this.id = comment.getId();
         this.body = comment.getBody();
         this.postId = comment.getItem().getId();
         this.userId = comment.getUser().getId();
         this.createdAt = comment.getCreatedAt();
         this.updatedAt = comment.getUpdatedAt();
-        this.author = new UserDto(user);
+        this.author = new UserDto(comment.getUser());
     }
 
     public CommentDto(Comment comment, UserDto author) {

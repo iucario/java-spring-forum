@@ -46,10 +46,10 @@ public class UserController {
     }
 
     @GetMapping(value = "/{id}/favorites", produces = "application/json")
-    public List<PostDto.PostListDto> getUserFavorites(@PathVariable Long id) {
+    public List<PostDto> getUserFavorites(@PathVariable Long id) {
         return userService.getUserFavorites(id)
                 .stream()
-                .map(postService::createPostListDto)
+                .map(PostDto::new)
                 .toList();
     }
 }

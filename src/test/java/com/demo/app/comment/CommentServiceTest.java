@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,6 +30,8 @@ public class CommentServiceTest {
     UserService userService;
     @Mock
     PostService postService;
+    @Mock
+    private RedisTemplate<String, Object> redisTemplate;
     private CommentService commentService;
     private User savedUser;
     private Post savedPost;
@@ -37,7 +40,7 @@ public class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        commentService = new CommentService(commentRepository, postService, userService);
+        commentService = new CommentService(commentRepository, postService, userService, redisTemplate);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
