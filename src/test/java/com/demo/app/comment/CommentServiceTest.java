@@ -11,8 +11,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +33,10 @@ public class CommentServiceTest {
     UserService userService;
     @Mock
     PostService postService;
+    @Mock
+    ZSetOperations<String, Object> zSetOperations;
+    @Mock
+    ValueOperations<String, Object> valueOperations;
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
     private CommentService commentService;
@@ -49,6 +56,8 @@ public class CommentServiceTest {
         savedComment = new Comment("This is comment", savedPost, savedUser);
         savedComment.setId(1L);
         savedAuthor = new UserDto(savedUser);
+        Mockito.lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
+        Mockito.lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @AfterEach
@@ -90,12 +99,10 @@ public class CommentServiceTest {
     @Test
     void getByPostId() {
         when(commentRepository.findByPostId(savedPost.getId(), 0, 100)).thenReturn(List.of(savedComment));
-        when(commentRepository.findById(savedComment.getId())).thenReturn(Optional.of(savedComment));
 
         commentService.getByPostId(savedPost.getId(), 0, 100);
 
         verify(commentRepository).findByPostId(savedPost.getId(), 0, 100);
-        verify(commentRepository).findById(savedComment.getId());
     }
 
     @Test

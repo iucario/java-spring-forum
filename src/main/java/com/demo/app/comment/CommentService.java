@@ -24,7 +24,7 @@ public class CommentService {
     private final UserService userService;
     private final String COMMENT_KEY = "comment:%d";
     private final String COMMENT_SET_KEY = "post:%d:comments";
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     public CommentService(CommentRepository commentRepository, PostService postService, UserService userService,
                           RedisTemplate<String, Object> redisTemplate) {
@@ -45,19 +45,14 @@ public class CommentService {
         return new UserDto(user, new UserStats(user));
     }
 
-    private CommentDto createCommentDto(Comment comment) {
-        UserDto author = getCommentAuthor(comment.getId());
-        CommentDto commentDto = new CommentDto(comment, author);
-        cacheAddComment(commentDto);
-        return commentDto;
-    }
-
     public List<CommentDto> getByPostId(Long postId, int offset, int limit) {
-        return cacheGetCommentList(postId, offset, limit);
-//        return commentRepository.findByPostId(postId, offset, limit)
-//                .stream()
-//                .map((this::createCommentDto))
-//                .toList();
+        if (Boolean.TRUE.equals(redisTemplate.hasKey("post:%d".formatted(postId)))) {
+            return cacheGetCommentByPostId(postId, offset, limit);
+        }
+        return commentRepository.findByPostId(postId, offset, limit)
+                .stream()
+                .map(CommentDto::new)
+                .toList();
     }
 
     public List<CommentDto> getByPostAndUser(Long postId, Long userId) {
@@ -68,7 +63,7 @@ public class CommentService {
                 .toList();
     }
 
-    // TODO: update post list in cache
+    // TODO: update post list in cache. Add to the beginning of the list
     @Transactional
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
@@ -112,12 +107,13 @@ public class CommentService {
 
     }
 
-    private List<CommentDto> cacheGetCommentList(Long postId, int offset, int limit) {
+    private List<CommentDto> cacheGetCommentByPostId(Long postId, int offset, int limit) {
         List<Object> comments = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
             Set<Object> commentIds = redisTemplate.opsForZSet().range(COMMENT_SET_KEY.formatted(postId), offset,
                     offset + limit);
+            assert commentIds != null;
             for (Object commentId : commentIds) {
-                connection.get(COMMENT_KEY.formatted(commentId).getBytes());
+                connection.get(COMMENT_KEY.formatted(Long.valueOf(commentId.toString())).getBytes());
             }
             return null;
         });
@@ -126,7 +122,9 @@ public class CommentService {
 
     private void cacheDeleteComment(Long id) {
         CommentDto c = (CommentDto) redisTemplate.opsForValue().getAndDelete(COMMENT_KEY.formatted(id));
-        redisTemplate.opsForZSet().remove(COMMENT_SET_KEY.formatted(c.postId), id);
+        if (c != null) {
+            redisTemplate.opsForZSet().remove(COMMENT_SET_KEY.formatted(c.postId), id);
+        }
     }
 
     private void cacheUpdateComment(CommentDto comment) {

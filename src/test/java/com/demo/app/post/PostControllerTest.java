@@ -1,6 +1,7 @@
 package com.demo.app.post;
 
 import com.demo.app.auth.AuthService;
+import com.demo.app.comment.CommentService;
 import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.userStats.UserStats;
@@ -35,6 +36,8 @@ class PostControllerTest {
     AuthService authService;
     @MockBean
     PostService postService;
+    @MockBean
+    CommentService commentService;
     private Post savedPost;
     private User savedUser;
     private UserStats userStats;
@@ -54,8 +57,7 @@ class PostControllerTest {
     void getUserPosts() throws Exception {
         List<PostDto> result = List.of(new PostDto(savedPost, author));
         when(postService.getUserPosts(1L, 0, 100)).thenReturn(result);
-        mockMvc.perform(get("/api/post")
-                        .param("userId", "1")
+        mockMvc.perform(get("/api/post/user/1")
                         .param("offset", "0")
                         .param("size", "100"))
                 .andExpect(status().isOk())

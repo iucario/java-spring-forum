@@ -37,11 +37,10 @@ public class PostService {
         List<PostDto> posts = cacheGetPostList();
         if (posts.size() < offset + size) {
             // Part or all of the posts are not in the cache, then get all from the database
-            List<PostDto> postList = postRepository.findPosts(offset, size)
+            return postRepository.findPosts(offset, size)
                     .stream()
                     .map(PostDto::new)
                     .toList();
-            return postList;
         } else {
             return posts.subList(offset, offset + size);
         }
@@ -137,11 +136,16 @@ public class PostService {
         redisTemplate.opsForValue().set(POST_KEY.formatted(post.id), post);
     }
 
+    /**
+     * Get the first 100 posts from the cache.
+     * TODO: add parameters offset and size
+     */
     private List<PostDto> cacheGetPostList() {
+        final int size = 100;
+        final int offset = 0;
         List<Object> postList = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-            Set<Object> postListIndex = redisTemplate.opsForZSet().range(POST_INDEX_KEY, 0, 100);
+            Set<Object> postListIndex = redisTemplate.opsForZSet().range(POST_INDEX_KEY, offset, size - 1);
             for (Object postId : postListIndex) {
-
                 redisTemplate.opsForValue().get(POST_KEY.formatted(Long.valueOf(postId.toString())));
             }
             return null;

@@ -47,6 +47,7 @@ class UserControllerTest {
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         userStats = new UserStats(savedUser);
+        savedUser.setUserStats(userStats);
         savedPost = new Post("title", "post body", savedUser);
         savedPost.setId(1L);
     }

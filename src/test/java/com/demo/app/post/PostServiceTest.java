@@ -13,10 +13,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.data.redis.core.ZSetOperations;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,6 +36,9 @@ public class PostServiceTest {
     @Mock
     ZSetOperations<String, Object> zSetOperations;
     @Mock
+    ValueOperations<String, Object> valueOperations;
+    Logger logger = Logger.getLogger(PostServiceTest.class.getName());
+    @Mock
     private RedisTemplate<String, Object> redisTemplate;
     private PostService postService;
     private User savedUser;
@@ -48,6 +53,7 @@ public class PostServiceTest {
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
         Mockito.lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
+        Mockito.lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
@@ -131,16 +137,7 @@ public class PostServiceTest {
 
         List<PostDto> postList = postService.getPostList(0, 10);
 
-        verify(postRepository).findPosts(0, 100);
-    }
-
-    @Test
-    void get_post_list_from_cache_when_has_key() {
-        when(redisTemplate.hasKey("postList")).thenReturn(true);
-
-        List<PostDto> postList = postService.getPostList(0, 10);
-
-        verify(zSetOperations).range("postList", 0, 9);
+        verify(postRepository).findPosts(0, 10);
     }
 
     @Test
