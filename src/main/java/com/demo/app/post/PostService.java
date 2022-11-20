@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.favorite.FavUserPost;
 import com.demo.app.favorite.FavUserPostRepository;
@@ -7,13 +8,10 @@ import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
 import org.slf4j.Logger;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class PostService {
@@ -21,20 +19,18 @@ public class PostService {
     private final PostRepository postRepository;
     private final UserService userService;
     private final FavUserPostRepository favUserPostRepository;
-    private final String POST_INDEX_KEY = "postList";
-    private final String POST_KEY = "post:%d";
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisUtil redisUtil;
 
     public PostService(PostRepository postRepository, UserService userService,
-                       FavUserPostRepository favUserPostRepository, RedisTemplate<String, Object> redisTemplate) {
+                       FavUserPostRepository favUserPostRepository, RedisUtil redisUtil) {
         this.postRepository = postRepository;
         this.userService = userService;
         this.favUserPostRepository = favUserPostRepository;
-        this.redisTemplate = redisTemplate;
+        this.redisUtil = redisUtil;
     }
 
     public List<PostDto> getPostList(final int offset, final int size) {
-        List<PostDto> posts = cacheGetPostList();
+        List<PostDto> posts = redisUtil.getPostList();
         if (posts.size() < offset + size) {
             // Part or all of the posts are not in the cache, then get all from the database
             return postRepository.findPosts(offset, size)
@@ -66,7 +62,7 @@ public class PostService {
         user.incrementPostCount();
         UserDto author = userService.saveUserStats(user.getUserStats());
         PostDto postDto = new PostDto(saved, author);
-        cacheAddPost(postDto);
+        redisUtil.addPost(postDto);
         return postDto;
     }
 
@@ -76,7 +72,7 @@ public class PostService {
         postRepository.deleteById(id);
         user.decrementPostCount();
         userService.saveUserStats(user.getUserStats());
-        cacheDeletePost(id);
+        redisUtil.deletePost(id);
     }
 
     public PostDto updatePost(PostDto.PostUpdate update, User user) {
@@ -85,7 +81,7 @@ public class PostService {
         post.updateTime();
         Post updatedPost = postRepository.save(post);
         UserDto author = userService.getUserInfo(user);
-        cacheUpdatePost(updatedPost);
+        redisUtil.updatePost(updatedPost);
         return new PostDto(updatedPost, author);
     }
 
@@ -110,56 +106,6 @@ public class PostService {
             throw new AppException.UnauthorizedException();
         }
         return post;
-    }
-
-    /**
-     * Add the last 100 active posts to the cache. Mostly not used because the cache should be updated
-     * when a post's activeAt is updated.
-     */
-    private void cachePostList() {
-        List<PostDto> postList = postRepository.findPosts(0, 100)
-                .stream()
-                .map(PostDto::new)
-                .toList();
-        redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-            for (PostDto postDto : postList) {
-                redisTemplate.opsForZSet().add(POST_INDEX_KEY, postDto.id, postDto.activeAt);
-                redisTemplate.opsForValue().set(POST_KEY.formatted(postDto.id), postDto);
-            }
-            return null;
-        });
-    }
-
-    // TODO: delete post detail and get comment list from comment list key
-    private void cacheAddPost(PostDto post) {
-        redisTemplate.opsForZSet().add(POST_INDEX_KEY, post.id, post.activeAt);
-        redisTemplate.opsForValue().set(POST_KEY.formatted(post.id), post);
-    }
-
-    /**
-     * Get the first 100 posts from the cache.
-     * TODO: add parameters offset and size
-     */
-    private List<PostDto> cacheGetPostList() {
-        final int size = 100;
-        final int offset = 0;
-        List<Object> postList = redisTemplate.executePipelined((RedisCallback<Object>) connection -> {
-            Set<Object> postListIndex = redisTemplate.opsForZSet().range(POST_INDEX_KEY, offset, size - 1);
-            for (Object postId : postListIndex) {
-                redisTemplate.opsForValue().get(POST_KEY.formatted(Long.valueOf(postId.toString())));
-            }
-            return null;
-        });
-        return postList.stream().map(PostDto.class::cast).toList();
-    }
-
-    private void cacheDeletePost(Long id) {
-        redisTemplate.opsForZSet().remove(POST_INDEX_KEY, id);
-        redisTemplate.delete(POST_KEY.formatted(id));
-    }
-
-    private void cacheUpdatePost(Post post) {
-        redisTemplate.opsForValue().set(POST_KEY.formatted(post.getId()), new PostDto(post));
     }
 
 }

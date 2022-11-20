@@ -1,5 +1,6 @@
 package com.demo.app.comment;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
@@ -39,6 +40,8 @@ public class CommentServiceTest {
     ValueOperations<String, Object> valueOperations;
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private RedisUtil redisUtil;
     private CommentService commentService;
     private User savedUser;
     private Post savedPost;
@@ -47,7 +50,7 @@ public class CommentServiceTest {
 
     @BeforeEach
     void setUp() {
-        commentService = new CommentService(commentRepository, postService, userService, redisTemplate);
+        commentService = new CommentService(commentRepository, postService, userService, redisUtil);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));

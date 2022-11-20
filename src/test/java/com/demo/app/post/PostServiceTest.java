@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.favorite.FavUserPostRepository;
 import com.demo.app.user.User;
@@ -40,13 +41,15 @@ public class PostServiceTest {
     Logger logger = Logger.getLogger(PostServiceTest.class.getName());
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private RedisUtil redisUtil;
     private PostService postService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository, userService, favUserPostRepository, redisTemplate);
+        postService = new PostService(postRepository, userService, favUserPostRepository, redisUtil);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
