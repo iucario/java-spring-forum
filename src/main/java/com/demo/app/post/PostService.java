@@ -14,6 +14,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 public class PostService {
     final Logger logger = org.slf4j.LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
@@ -29,13 +30,22 @@ public class PostService {
         this.redisUtil = redisUtil;
     }
 
+    /**
+     * Explicitly set the commentCount because it's initialized to 0 in the PostDto constructor.
+     */
+    private static PostDto createPostDto(Post post) {
+        PostDto postDto = new PostDto(post);
+        postDto.commentCount = post.getCommentCount();
+        return postDto;
+    }
+
     public List<PostDto> getPostList(final int offset, final int size) {
         List<PostDto> posts = redisUtil.getPostList();
         if (posts.size() < offset + size) {
             // Part or all of the posts are not in the cache, then get all from the database
             return postRepository.findPosts(offset, size)
                     .stream()
-                    .map(PostDto::new)
+                    .map(PostService::createPostDto)
                     .toList();
         } else {
             return posts.subList(offset, offset + size);
@@ -56,7 +66,6 @@ public class PostService {
         });
     }
 
-    @Transactional
     public PostDto addPost(Post post, User user) {
         Post saved = postRepository.save(post);
         user.incrementPostCount();
@@ -66,7 +75,6 @@ public class PostService {
         return postDto;
     }
 
-    @Transactional
     public void deletePostById(Long id, User user) {
         getUserPost(id, user);
         postRepository.deleteById(id);

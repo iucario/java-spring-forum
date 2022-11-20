@@ -30,12 +30,15 @@ public class RedisUtil {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
         this.template = redisTemplate;
+
+        initCache();
+        logger.info("RedisUtil initialized. Cached posts: %d".formatted(getPostList().size()));
     }
 
     /**
      * Add the last 100 active posts to the cache. Mostly used in testing.
      */
-    public void initCache() {
+    private void initCache() {
         List<Post> posts = postRepository.findPosts(0, 100);
         List<PostDto> postList = posts
                 .stream()
@@ -80,9 +83,16 @@ public class RedisUtil {
         return postList.stream().map(PostDto.class::cast).toList();
     }
 
+    /**
+     * Delete the post and related comments and sorted index from the cache.
+     */
     public void deletePost(Long id) {
         template.opsForZSet().remove(POST_INDEX_KEY, id);
         template.delete(POST_KEY.formatted(id));
+        Set<Object> commentIds = template.opsForZSet().range(COMMENT_SET_KEY.formatted(id), 0, -1);
+        for (Object commentId : commentIds) {
+            template.delete(COMMENT_KEY.formatted(Long.valueOf(commentId.toString())));
+        }
     }
 
     public void updatePost(Post post) {
@@ -92,7 +102,27 @@ public class RedisUtil {
     public void addComment(CommentDto commentDto) {
         template.opsForValue().set(COMMENT_KEY.formatted(commentDto.id), commentDto);
         template.opsForZSet().add(COMMENT_SET_KEY.formatted(commentDto.postId), commentDto.id, commentDto.createdAt);
+        updateActiveAt(commentDto.postId, commentDto.createdAt);
+        updateCommentCount(commentDto.postId);
+    }
 
+    private void updateCommentCount(Long postId) {
+        PostDto postDto = (PostDto) template.opsForValue().get(POST_KEY.formatted(postId));
+        postDto.commentCount = getCommentCount(postId);
+        template.opsForValue().set(POST_KEY.formatted(postId), postDto);
+    }
+
+    /**
+     * Get comment count of a post from the cache. May be inaccurate if the cache is not updated.
+     */
+    private int getCommentCount(Long postId) {
+        String key = COMMENT_SET_KEY.formatted(postId);
+        Long count = template.opsForZSet().zCard(key);
+        return count != null ? Math.toIntExact(count) : 0;
+    }
+
+    private void updateActiveAt(Long postId, Long activeAt) {
+        template.opsForZSet().add(POST_INDEX_KEY, postId, activeAt);
     }
 
     public List<CommentDto> getCommentsByPostId(Long postId, int offset, int limit) {

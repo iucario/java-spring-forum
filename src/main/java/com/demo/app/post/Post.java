@@ -36,12 +36,6 @@ public class Post implements Serializable {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
     private Set<FavUserPost> favUserPosts;
 
-    /* FIXME:
-    org.postgresql.util.PSQLException: ERROR: update or delete on table "posts" violates foreign key constraint
-    "fk6v7jugcdugcmtfyhd7sdxg69c" on table "fav_user_post"
-  Detail: Key (id)=(202) is still referenced from table "fav_user_post".
-     */
-
     public Post() {
     }
 
@@ -53,6 +47,10 @@ public class Post implements Serializable {
         this.createdAt = timestamp;
         this.updatedAt = timestamp;
         this.activeAt = timestamp;
+    }
+
+    public int getCommentCount() {
+        return comments.size();
     }
 
     @Override
@@ -116,4 +114,5 @@ public class Post implements Serializable {
     public void setComments(List<Comment> comments) {
         this.comments = comments;
     }
+
 }

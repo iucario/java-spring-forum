@@ -16,6 +16,7 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
@@ -60,10 +61,11 @@ public class CommentService {
     }
 
     // TODO: update post list in cache. Add to the beginning of the list
-    @Transactional
+    // TODO: update post commentCount in cache and activeAt both in cache and database
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
+        post.setActiveAt(comment.getCreatedAt());
         user.incrementCommentCount();
         UserDto author = userService.saveUserStats(user.getUserStats());
         CommentDto commentDto = new CommentDto(comment, author);
@@ -71,7 +73,6 @@ public class CommentService {
         return commentDto;
     }
 
-    @Transactional
     public void deleteComment(Long id, User user) {
         getUserComment(id, user);
         commentRepository.deleteById(id);
