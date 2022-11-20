@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -45,6 +46,7 @@ public class PostService {
             // Part or all of the posts are not in the cache, then get all from the database
             return postRepository.findPosts(offset, size)
                     .stream()
+                    .sorted(Comparator.comparing(Post::getActiveAt).reversed())
                     .map(PostService::createPostDto)
                     .toList();
         } else {
