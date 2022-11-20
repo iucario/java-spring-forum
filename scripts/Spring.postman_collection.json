@@ -2120,7 +2120,9 @@
                   "    const before = pm.collectionVariables.get('profile-admin')\r",
                   "    const data = pm.response.json()\r",
                   "    pm.expect(data.author.commentCount).to.equal(before.commentCount + 1)\r",
-                  "})"
+                  "})\r",
+                  "\r",
+                  "pm.collectionVariables.set('profile-admin', pm.response.json().author)"
                 ],
                 "type": "text/javascript"
               }
@@ -2152,6 +2154,132 @@
           "response": []
         },
         {
+          "name": "comment add to oldest post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "\r",
+                  "pm.test(\"Has keys\", () => {\r",
+                  "    const data = pm.response.json()\r",
+                  "    pm.expect(data).to.have.keys('id', 'body', 'postId', 'createdAt', 'updatedAt', 'userId', 'author')\r",
+                  "    pm.collectionVariables.set('commentId', data.id)\r",
+                  "})\r",
+                  "\r",
+                  "pm.test(\"Increase comment count\", () => {\r",
+                  "    const before = pm.collectionVariables.get('profile-admin')\r",
+                  "    const data = pm.response.json()\r",
+                  "    console.log(before)\r",
+                  "    pm.expect(data.author.commentCount).to.equal(before.commentCount + 1)\r",
+                  "})\r",
+                  "\r",
+                  "pm.collectionVariables.set('profile-admin', pm.response.json().author)"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const postList = pm.collectionVariables.get(\"postList\");\r",
+                  "if (postList !== undefined) {\r",
+                  "    console.log(postList.length)\r",
+                  "    pm.environment.set(\"oldestPostId\", postList[postList.length-1].id);\r",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"postId\": {{oldestPostId}},\r\n    \"body\": \"comment to post <postId>\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{host}}/api/comment",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "comment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "post list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {\r",
+                  "    pm.response.to.have.status(200);\r",
+                  "});\r",
+                  "pm.test(\"Is array\", () => {\r",
+                  "    let data = pm.response.json()\r",
+                  "    pm.expect(data).to.be.an('array')\r",
+                  "    pm.collectionVariables.set('postList', data)\r",
+                  "    if (data.length)\r",
+                  "        pm.collectionVariables.set('postId', data[0].id)\r",
+                  "})\r",
+                  "\r",
+                  "pm.test('Posts should be sorted by activeAt desc', () => {\r",
+                  "    const data = pm.response.json()\r",
+                  "    const expected = data.slice().sort((a, b) => a.activeAt >= b.activeAt).map(x => x.id)\r",
+                  "    const actual = data.map(x => x.id)\r",
+                  "    pm.expect(actual).to.eql(expected)\r",
+                  "})"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{host}}/api/post?offset=0&size=20",
+              "host": [
+                "{{host}}"
+              ],
+              "path": [
+                "api",
+                "post"
+              ],
+              "query": [
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "comment get from post",
           "event": [
             {
@@ -2165,6 +2293,13 @@
                   "pm.test('Is list', () => {\r",
                   "    const data = pm.response.json();\r",
                   "    pm.expect(data).to.be.an('array')\r",
+                  "})\r",
+                  "\r",
+                  "pm.test('Comments should be sorted by createdAt desc', () => {\r",
+                  "    const data = pm.response.json()\r",
+                  "    const expected = data.slice().sort((a, b) => a.createdAt <= b.createdAt).map(x => x.id)\r",
+                  "    const actual = data.map(x => x.id)\r",
+                  "    pm.expect(actual).to.eql(expected)\r",
                   "})"
                 ],
                 "type": "text/javascript"
@@ -2792,15 +2927,15 @@
       "value": ""
     },
     {
-      "key": "profile-admin",
-      "value": ""
-    },
-    {
       "key": "postList",
       "value": ""
     },
     {
       "key": "commentId",
+      "value": ""
+    },
+    {
+      "key": "profile-admin",
       "value": ""
     }
   ]
