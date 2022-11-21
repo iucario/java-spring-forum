@@ -11,6 +11,8 @@ Authentication: Filter and JWT
 
 Database: PostgreSQL
 
+Cache: Redis
+
 Technologies: JPA, Hibernate, Spring
 
 API docs: https://iucario.github.io/java-spring-forum/
@@ -20,6 +22,7 @@ API docs: https://iucario.github.io/java-spring-forum/
 ## Getting Started
 
 `docker run --rm -e POSTGRES_PASSWORD=mypassword -e POSTGRES_USER=myuser -e POSTGRES_DB=demo -p 5432:5432 -d postgres`
+`./gradlew bootrun`
 
 ## API
 
