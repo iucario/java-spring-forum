@@ -34,7 +34,7 @@ public class PostService {
     /**
      * Explicitly set the commentCount because it's initialized to 0 in the PostDto constructor.
      */
-    private static PostDto createPostDto(Post post) {
+    private PostDto createPostDto(Post post) {
         PostDto postDto = new PostDto(post);
         postDto.commentCount = post.getCommentCount();
         return postDto;
@@ -47,7 +47,7 @@ public class PostService {
             return postRepository.findPosts(offset, size)
                     .stream()
                     .sorted(Comparator.comparing(Post::getActiveAt).reversed())
-                    .map(PostService::createPostDto)
+                    .map(this::createPostDto)
                     .toList();
         } else {
             return posts.subList(offset, offset + size);
@@ -58,7 +58,7 @@ public class PostService {
         UserDto author = userService.getUserProfile(userId);
         return postRepository.findUserPosts(userId, offset, limit)
                 .stream()
-                .map((post -> new PostDto(post, author)))
+                .map(this::createPostDto)
                 .toList();
     }
 
