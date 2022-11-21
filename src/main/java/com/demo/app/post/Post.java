@@ -18,6 +18,7 @@ public class Post implements Serializable {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "post_seq")
     private Long id;
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String body;
     @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;

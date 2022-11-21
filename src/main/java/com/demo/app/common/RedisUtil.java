@@ -36,10 +36,10 @@ public class RedisUtil {
     }
 
     /**
-     * Add the last 100 active posts to the cache. Mostly used in testing.
+     * Add the last 20 active posts to the cache. Mostly used in testing.
      */
     private void initCache() {
-        List<Post> posts = postRepository.findPosts(0, 100);
+        List<Post> posts = postRepository.findPosts(0, 20);
         List<PostDto> postList = posts
                 .stream()
                 .map(PostDto::new)
