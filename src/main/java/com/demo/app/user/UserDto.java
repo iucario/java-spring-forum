@@ -59,7 +59,8 @@ public class UserDto {
                 "letters, numbers and underscores")
         public String name;
         @NonNull
-        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!])(?=\\S+$).{8,}$", message = "Password " +
+        @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!()])(?=\\S+$).{8,}$", message = "Password" +
+                " " +
                 "must contain at least one digit, one lowercase letter, one uppercase letter, one special character " +
                 "in @#$%^&+=! and must be at least 8 characters long")
         public String password;
