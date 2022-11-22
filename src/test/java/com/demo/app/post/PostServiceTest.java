@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.favorite.FavUserPostRepository;
 import com.demo.app.user.User;
@@ -12,17 +13,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.data.redis.core.ZSetOperations;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
@@ -33,22 +35,29 @@ public class PostServiceTest {
     @Mock
     FavUserPostRepository favUserPostRepository;
     @Mock
-    ListOperations<String, Object> listOperations;
+    ZSetOperations<String, Object> zSetOperations;
+    @Mock
+    ValueOperations<String, Object> valueOperations;
+    Logger logger = Logger.getLogger(PostServiceTest.class.getName());
     @Mock
     private RedisTemplate<String, Object> redisTemplate;
+    @Mock
+    private RedisUtil redisUtil;
     private PostService postService;
     private User savedUser;
     private Post savedPost;
 
     @BeforeEach
     void setUp() {
-        postService = new PostService(postRepository, userService, favUserPostRepository, redisTemplate);
+        postService = new PostService(postRepository, userService, favUserPostRepository, redisUtil);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
-        Mockito.lenient().when(redisTemplate.opsForList()).thenReturn(listOperations);
+        savedPost.setComments(List.of());
+        Mockito.lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
+        Mockito.lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }
 
     @Test
@@ -128,20 +137,11 @@ public class PostServiceTest {
 
     @Test
     void getPostList() {
-        when(postRepository.findPosts(0, 10)).thenReturn(List.of(savedPost));
+        when(postRepository.findPosts(eq(0), anyInt())).thenReturn(List.of(savedPost));
 
-        List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
+        List<PostDto> postList = postService.getPostList(0, 10);
 
         verify(postRepository).findPosts(0, 10);
-    }
-
-    @Test
-    void get_post_list_from_cache_when_has_key() {
-        when(redisTemplate.hasKey("postList")).thenReturn(true);
-
-        List<PostDto.PostListDto> postList = postService.getPostList(0, 10);
-
-        verify(listOperations).range("postList", 0, 9);
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.demo.app.post;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.favorite.FavUserPost;
 import com.demo.app.favorite.FavUserPostRepository;
@@ -7,42 +8,49 @@ import com.demo.app.user.User;
 import com.demo.app.user.UserDto;
 import com.demo.app.user.UserService;
 import org.slf4j.Logger;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Transactional
 public class PostService {
     final Logger logger = org.slf4j.LoggerFactory.getLogger(PostService.class);
     private final PostRepository postRepository;
     private final UserService userService;
     private final FavUserPostRepository favUserPostRepository;
-    private RedisTemplate<String, Object> redisTemplate;
+    private final RedisUtil redisUtil;
 
     public PostService(PostRepository postRepository, UserService userService,
-                       FavUserPostRepository favUserPostRepository, RedisTemplate<String, Object> redisTemplate) {
+                       FavUserPostRepository favUserPostRepository, RedisUtil redisUtil) {
         this.postRepository = postRepository;
         this.userService = userService;
         this.favUserPostRepository = favUserPostRepository;
-        this.redisTemplate = redisTemplate;
+        this.redisUtil = redisUtil;
     }
 
-    public List<PostDto.PostListDto> getPostList(final int offset, final int limit) {
-        if (Boolean.TRUE.equals(redisTemplate.hasKey("postList"))) {
-            List<Object> posts = redisTemplate.opsForList().range("postList", offset, offset + limit - 1);
-            logger.info("Key 'postList' found in cache");
-            logger.info("Posts %s".formatted(posts));
-            return posts.stream().map(PostDto.PostListDto.class::cast).toList();
-        } else {
-            List<PostDto.PostListDto> postList = postRepository.findPosts(offset, limit)
+    /**
+     * Explicitly set the commentCount because it's initialized to 0 in the PostDto constructor.
+     */
+    private PostDto createPostDto(Post post) {
+        PostDto postDto = new PostDto(post);
+        postDto.commentCount = post.getCommentCount();
+        return postDto;
+    }
+
+    public List<PostDto> getPostList(final int offset, final int size) {
+        List<PostDto> posts = redisUtil.getPostList();
+        if (posts.size() < offset + size) {
+            // Part or all of the posts are not in the cache, then get all from the database
+            return postRepository.findPosts(offset, size)
                     .stream()
-                    .map(this::createPostListDto)
+                    .sorted(Comparator.comparing(Post::getActiveAt).reversed())
+                    .map(this::createPostDto)
                     .toList();
-            logger.info("Initialize key 'postList' to the cache");
-            redisTemplate.opsForList().rightPushAll("postList", postList.toArray());
-            return postList;
+        } else {
+            return posts.subList(offset, offset + size);
         }
     }
 
@@ -50,7 +58,7 @@ public class PostService {
         UserDto author = userService.getUserProfile(userId);
         return postRepository.findUserPosts(userId, offset, limit)
                 .stream()
-                .map((post -> new PostDto(post, author)))
+                .map(this::createPostDto)
                 .toList();
     }
 
@@ -60,34 +68,31 @@ public class PostService {
         });
     }
 
-    @Transactional
     public PostDto addPost(Post post, User user) {
         Post saved = postRepository.save(post);
         user.incrementPostCount();
         UserDto author = userService.saveUserStats(user.getUserStats());
-        return new PostDto(saved, author);
+        PostDto postDto = new PostDto(saved, author);
+        redisUtil.addPost(postDto);
+        return postDto;
     }
 
-    @Transactional
     public void deletePostById(Long id, User user) {
         getUserPost(id, user);
         postRepository.deleteById(id);
         user.decrementPostCount();
         userService.saveUserStats(user.getUserStats());
+        redisUtil.deletePost(id);
     }
 
-    public PostDto updatePost(PostDto.PostUpdate postUpdate, User user) {
-        Post post = getUserPost(postUpdate.id, user);
-        post.setBody(postUpdate.body);
+    public PostDto updatePost(PostDto.PostUpdate update, User user) {
+        Post post = getUserPost(update.id, user);
+        post.setBody(update.body);
         post.updateTime();
         Post updatedPost = postRepository.save(post);
         UserDto author = userService.getUserInfo(user);
+        redisUtil.updatePost(updatedPost);
         return new PostDto(updatedPost, author);
-    }
-
-    public PostDto.PostListDto createPostListDto(Post post) {
-        UserDto author = userService.getUserInfo(post.getUser());
-        return new PostDto.PostListDto(post, author);
     }
 
     public void favoritePost(User user, Long postId) {
@@ -112,4 +117,5 @@ public class PostService {
         }
         return post;
     }
+
 }

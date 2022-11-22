@@ -14,6 +14,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             ":offset", nativeQuery = true)
     List<Comment> findByPostId(@Param("postId") Long itemId, @Param("offset") int offset, @Param("limit") int limit);
 
+    @Query(value = "SELECT c FROM Comment c WHERE c.post.id = :postId")
+    List<Comment> findAllByPostId(@Param("postId") Long postId);
+
     @Query("SELECT c FROM Comment c WHERE c.user.id = :userId")
     List<Comment> findByUserId(@Param("userId") Long userId);
 

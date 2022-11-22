@@ -1,5 +1,6 @@
 package com.demo.app.user;
 
+import com.demo.app.favorite.FavUserPost;
 import com.demo.app.post.Post;
 import com.demo.app.user.userStats.UserStats;
 
@@ -29,6 +30,9 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private UserStats userStats;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<FavUserPost> favUserPosts;
 
     public User() {
     }

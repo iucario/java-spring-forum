@@ -1,5 +1,6 @@
 package com.demo.app.comment;
 
+import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
@@ -15,15 +16,19 @@ import javax.transaction.Transactional;
 import java.util.List;
 
 @Service
+@Transactional
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostService postService;
     private final UserService userService;
+    private final RedisUtil redisUtil;
 
-    public CommentService(CommentRepository commentRepository, PostService postService, UserService userService) {
+    public CommentService(CommentRepository commentRepository, PostService postService, UserService userService,
+                          RedisUtil redisUtil) {
         this.commentRepository = commentRepository;
         this.postService = postService;
         this.userService = userService;
+        this.redisUtil = redisUtil;
     }
 
     public Comment getById(Long id) {
@@ -32,34 +37,19 @@ public class CommentService {
         });
     }
 
-    public UserDto getPostAuthor(Long postId) {
-        User user = userService.getById(postService.getById(postId).getUser().getId());
-        return new UserDto(user, new UserStats(user));
-    }
-
     public UserDto getCommentAuthor(Long commentId) {
         User user = getById(commentId).getUser();
         return new UserDto(user, new UserStats(user));
     }
 
-    private CommentDto createCommentDto(Comment comment) {
-        UserDto author = getCommentAuthor(comment.getId());
-        return new CommentDto(comment, author);
-    }
-
     public List<CommentDto> getByPostId(Long postId, int offset, int limit) {
+        if (redisUtil.hasPost(postId)) {
+            return redisUtil.getCommentsByPostId(postId, offset, limit);
+        }
         return commentRepository.findByPostId(postId, offset, limit)
                 .stream()
-                .map((this::createCommentDto))
+                .map(CommentDto::new)
                 .toList();
-    }
-
-    public List<Comment> getByUserId(Long userId) {
-        return commentRepository.findByUserId(userId);
-    }
-
-    public List<Comment> getByUserName(String name) {
-        return commentRepository.findByUserName(name);
     }
 
     public List<CommentDto> getByPostAndUser(Long postId, Long userId) {
@@ -70,29 +60,34 @@ public class CommentService {
                 .toList();
     }
 
-    @Transactional
+    // TODO: update post list in cache. Add to the beginning of the list
+    // TODO: update post commentCount in cache and activeAt both in cache and database
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
+        post.setActiveAt(comment.getCreatedAt());
         user.incrementCommentCount();
         UserDto author = userService.saveUserStats(user.getUserStats());
-        return new CommentDto(comment, author);
+        CommentDto commentDto = new CommentDto(comment, author);
+        redisUtil.addComment(commentDto);
+        return commentDto;
     }
 
-    @Transactional
     public void deleteComment(Long id, User user) {
         getUserComment(id, user);
         commentRepository.deleteById(id);
         user.decrementCommentCount();
         userService.saveUserStats(user.getUserStats());
+        redisUtil.deleteComment(id);
     }
 
     public CommentDto updateComment(CommentDto.CommentUpdate commentUpdate, User user) {
         Comment comment = getUserComment(commentUpdate.id, user);
         comment.setBody(commentUpdate.body);
         comment.updateTime();
-        UserDto author = userService.getUserInfo(user);
-        return new CommentDto(commentRepository.save(comment), author);
+        CommentDto commentDto = new CommentDto(commentRepository.save(comment));
+        redisUtil.updateComment(commentDto);
+        return commentDto;
     }
 
     private Comment getUserComment(Long id, User user) {
@@ -102,4 +97,5 @@ public class CommentService {
         }
         return comment;
     }
+
 }

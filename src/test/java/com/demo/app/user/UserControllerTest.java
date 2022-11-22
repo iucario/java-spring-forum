@@ -2,7 +2,6 @@ package com.demo.app.user;
 
 import com.demo.app.auth.AuthService;
 import com.demo.app.post.Post;
-import com.demo.app.post.PostDto;
 import com.demo.app.post.PostService;
 import com.demo.app.user.userStats.UserStats;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,6 +47,7 @@ class UserControllerTest {
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         userStats = new UserStats(savedUser);
+        savedUser.setUserStats(userStats);
         savedPost = new Post("title", "post body", savedUser);
         savedPost.setId(1L);
     }
@@ -118,7 +118,6 @@ class UserControllerTest {
     @Test
     void getUserFavorites() throws Exception {
         UserDto author = new UserDto(savedUser, userStats);
-        when(postService.createPostListDto(any())).thenReturn(new PostDto.PostListDto(savedPost, author));
         when(userService.getUserFavorites(any())).thenReturn(List.of(savedPost));
         mockMvc.perform(get("/user/1/favorites"))
                 .andExpect(status().isOk())

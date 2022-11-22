@@ -11,7 +11,9 @@ import java.util.Date;
 public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "comment_seq")
+    @Column(nullable = false)
     private Long id;
+    @Column(columnDefinition = "TEXT")
     private String body;
     @Column(name = "created_at", columnDefinition = "BIGINT")
     private Long createdAt;
@@ -62,6 +64,10 @@ public class Comment {
         return id;
     }
 
+    public void setId(long id) {
+        this.id = id;
+    }
+
     public Long getUpdatedAt() {
         return updatedAt;
     }
@@ -77,9 +83,5 @@ public class Comment {
     public String toString() {
         return String.format("Comment[id=%d, body=%s, created_at=%d, updated_at=%d, user=%s]", id,
                 body, createdAt, updatedAt, user.getName());
-    }
-
-    public void setId(long id) {
-        this.id = id;
     }
 }

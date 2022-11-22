@@ -1,11 +1,12 @@
 package com.demo.app.post;
 
+import com.demo.app.comment.CommentDto;
 import com.demo.app.user.UserDto;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.Pattern;
-import java.io.Serializable;
+import java.util.List;
 
 public class PostDto {
     public Long id;
@@ -13,8 +14,23 @@ public class PostDto {
     public String body;
     public Long createdAt;
     public Long updatedAt;
+    public Long activeAt;
     public UserDto author;
-    public Long commentCount = 0L;
+    public int commentCount = 0;
+
+    public PostDto() {
+    }
+
+    public PostDto(Post post) {
+        this.id = post.getId();
+        this.title = post.getTitle();
+        this.body = post.getBody();
+        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
+        this.activeAt = post.getActiveAt();
+        this.author = new UserDto(post.getUser());
+        this.commentCount = 0;
+    }
 
     public PostDto(Post post, UserDto author) {
         this.id = post.getId();
@@ -22,38 +38,51 @@ public class PostDto {
         this.body = post.getBody();
         this.createdAt = post.getCreatedAt();
         this.updatedAt = post.getUpdatedAt();
+        this.activeAt = post.getActiveAt();
         this.author = author;
+        this.commentCount = 0;
     }
 
     @Override
     public String toString() {
-        return String.format("PostDto[id=%d, title=%s body=%s created_at=%d, updated_at=%d, author=%s]", id,
-                title, body, createdAt, updatedAt, author.name);
+        return String.format("PostDto[id=%d, title=%s, body=%s, created_at=%d, updated_at=%d, active_at=%d, author=%s]"
+                , id, title, body, createdAt, updatedAt, activeAt, author.name);
     }
 
-    public static class PostListDto implements Serializable {
+    /**
+     * The schema for any data needed in the post detail page. E.g. post content, author, comments, etc.
+     */
+    public static class PostDetail {
         public Long id;
         public String title;
+        public String body;
         public Long createdAt;
         public Long updatedAt;
+        public Long activeAt;
         public UserDto author;
-        public Long commentCount = 0L;
+        public int commentCount = 0;
+        public List<CommentDto> comments;
 
-        public PostListDto() {
+        public PostDetail() {
         }
 
-        public PostListDto(Post post, UserDto author) {
+        public PostDetail(Post post, List<CommentDto> comments) {
             this.id = post.getId();
             this.title = post.getTitle();
+            this.body = post.getBody();
             this.createdAt = post.getCreatedAt();
             this.updatedAt = post.getUpdatedAt();
-            this.author = author;
+            this.activeAt = post.getActiveAt();
+            this.author = new UserDto(post.getUser());
+            this.comments = comments;
+            this.commentCount = post.getCommentCount();
         }
 
         @Override
         public String toString() {
-            return String.format("PostListDto[id=%d, title=%s created_at=%d, updated_at=%d, author=%s]", id,
-                    title, createdAt, updatedAt, author.name);
+            return String.format("PostPage[id=%d, title=%s, created_at=%d, updated_at=%d, author=%s, " +
+                            "commentCount=%d]", id,
+                    title, createdAt, updatedAt, author.name, commentCount);
         }
     }
 

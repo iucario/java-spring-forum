@@ -14,6 +14,16 @@ public class CommentDto {
     protected CommentDto() {
     }
 
+    public CommentDto(Comment comment) {
+        this.id = comment.getId();
+        this.body = comment.getBody();
+        this.postId = comment.getItem().getId();
+        this.userId = comment.getUser().getId();
+        this.createdAt = comment.getCreatedAt();
+        this.updatedAt = comment.getUpdatedAt();
+        this.author = new UserDto(comment.getUser());
+    }
+
     public CommentDto(Comment comment, UserDto author) {
         this.id = comment.getId();
         this.body = comment.getBody();
