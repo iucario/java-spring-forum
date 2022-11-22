@@ -55,6 +55,7 @@ public class PostServiceTest {
         savedUser.setUserStats(new UserStats(savedUser));
         savedPost = new Post("title", "This is body", savedUser);
         savedPost.setId(1L);
+        savedPost.setComments(List.of());
         Mockito.lenient().when(redisTemplate.opsForZSet()).thenReturn(zSetOperations);
         Mockito.lenient().when(redisTemplate.opsForValue()).thenReturn(valueOperations);
     }

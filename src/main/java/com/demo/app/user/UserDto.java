@@ -65,7 +65,7 @@ public class UserDto {
                 "in @#$%^&+=! and must be at least 8 characters long")
         public String password;
 
-        public UserCreate(String name, String password) {
+        public UserCreate(@NonNull String name, @NonNull String password) {
             this.name = name;
             this.password = password;
         }

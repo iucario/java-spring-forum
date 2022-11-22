@@ -75,7 +75,7 @@ public class PostDto {
             this.activeAt = post.getActiveAt();
             this.author = new UserDto(post.getUser());
             this.comments = comments;
-            this.commentCount = comments.size();
+            this.commentCount = post.getCommentCount();
         }
 
         @Override
