@@ -125,10 +125,10 @@ public class RedisUtil {
         template.opsForZSet().add(POST_INDEX_KEY, postId, activeAt);
     }
 
-    public List<CommentDto> getCommentsByPostId(Long postId, int offset, int limit) {
+    public List<CommentDto> getCommentsByPostId(Long postId, int offset, int size) {
         List<Object> comments = template.executePipelined((RedisCallback<Object>) connection -> {
             Set<Object> commentIds = template.opsForZSet().range(COMMENT_SET_KEY.formatted(postId), offset,
-                    offset + limit);
+                    offset + size - 1);
             assert commentIds != null;
             for (Object commentId : commentIds) {
                 connection.get(COMMENT_KEY.formatted(Long.valueOf(commentId.toString())).getBytes());
