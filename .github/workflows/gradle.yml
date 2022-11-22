@@ -9,7 +9,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "actions" ]
   pull_request:
     branches: [ "main" ]
 
@@ -28,7 +28,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Grant Permissions to gradlew
+      - name: Grant permissions to gradlew
         run: chmod +x ./gradlew
       - name: Install dependencies, run tests, and collect coverage
         run: ./gradlew build
