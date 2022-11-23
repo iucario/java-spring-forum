@@ -60,15 +60,17 @@ public class CommentService {
                 .toList();
     }
 
-    // TODO: update post list in cache. Add to the beginning of the list
-    // TODO: update post commentCount in cache and activeAt both in cache and database
+    /**
+     * Add a comment to a post. Update user's commentCount, post's activeAt.
+     * Post's commentCount is not updated because there is no field for it yet. It's calculated in the DTO.
+     * TODO: notify the author of the post
+     */
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
         post.setActiveAt(comment.getCreatedAt());
         user.incrementCommentCount();
-        UserDto author = userService.saveUserStats(user.getUserStats());
-        CommentDto commentDto = new CommentDto(comment, author);
+        CommentDto commentDto = new CommentDto(comment);
         redisUtil.addComment(commentDto);
         return commentDto;
     }

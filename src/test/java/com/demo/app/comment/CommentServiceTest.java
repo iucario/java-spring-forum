@@ -1,6 +1,7 @@
 package com.demo.app.comment;
 
 import com.demo.app.common.RedisUtil;
+import com.demo.app.notification.NotificationService;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
@@ -47,10 +48,13 @@ public class CommentServiceTest {
     private Post savedPost;
     private Comment savedComment;
     private UserDto savedAuthor;
+    @Mock
+    private NotificationService notificationService;
 
     @BeforeEach
     void setUp() {
-        commentService = new CommentService(commentRepository, postService, userService, redisUtil);
+        commentService = new CommentService(commentRepository, postService, userService, redisUtil,
+                notificationService);
         savedUser = new User("testname", "testpassword");
         savedUser.setId(1L);
         savedUser.setUserStats(new UserStats(savedUser));
@@ -85,7 +89,6 @@ public class CommentServiceTest {
         CommentDto comment = commentService.addComment(commentCreate, savedUser);
 
         verify(commentRepository).save(any(Comment.class));
-        verify(userService).saveUserStats(any(UserStats.class));
         assertEquals(commentCreate.body, comment.body);
     }
 
