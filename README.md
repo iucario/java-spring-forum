@@ -17,6 +17,8 @@ Technologies: JPA, Hibernate, Spring
 
 API docs: https://iucario.github.io/java-spring-forum/
 
+Simple frontend: https://github.com/iucario/forum-frontend
+
 ![](Demo%20Diagram.png)
 
 ## Getting Started
