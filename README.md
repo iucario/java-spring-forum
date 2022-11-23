@@ -5,11 +5,11 @@
 
 A forum API demo.
 
-Features: Creating user, posting, commenting and uploading files.
+Features: Creating user, posting, commenting and uploading files. Notification, authentication and authorization.
 
 Authentication: Filter and JWT
 
-Database: PostgreSQL
+Database: PostgreSQL, Cassandra
 
 Cache: Redis
 
@@ -22,6 +22,14 @@ API docs: https://iucario.github.io/java-spring-forum/
 ## Getting Started
 
 ### Start server
+
+Cassandra
+
+```shell
+docker run --name cassandra -p 9042:9042 -d cassandra:latest
+docker exec -it cassandra cqlsh
+CREATE KEYSPACE demo WITH replication = {'class' : 'SimpleStrategy', 'replication_factor' : 1};
+```
 
 ```shell
 docker run --rm -d -p 6379:6379 redis
