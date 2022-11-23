@@ -33,6 +33,7 @@ public class PostService {
 
     /**
      * Explicitly set the commentCount because it's initialized to 0 in the PostDto constructor.
+     * Was created to make tests work. Seems that it's not needed. TODO: remove it.
      */
     private PostDto createPostDto(Post post) {
         PostDto postDto = new PostDto(post);
@@ -116,6 +117,11 @@ public class PostService {
             throw new AppException.UnauthorizedException();
         }
         return post;
+    }
+
+    public void updateActiveAt(Post post, Long activeAt) {
+        post.setActiveAt(activeAt);
+        postRepository.save(post);
     }
 
 }

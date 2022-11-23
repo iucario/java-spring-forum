@@ -2,6 +2,7 @@ package com.demo.app.comment;
 
 import com.demo.app.common.RedisUtil;
 import com.demo.app.exception.AppException;
+import com.demo.app.notification.NotificationService;
 import com.demo.app.post.Post;
 import com.demo.app.post.PostService;
 import com.demo.app.user.User;
@@ -22,13 +23,15 @@ public class CommentService {
     private final PostService postService;
     private final UserService userService;
     private final RedisUtil redisUtil;
+    private final NotificationService notificationService;
 
     public CommentService(CommentRepository commentRepository, PostService postService, UserService userService,
-                          RedisUtil redisUtil) {
+                          RedisUtil redisUtil, NotificationService notificationService) {
         this.commentRepository = commentRepository;
         this.postService = postService;
         this.userService = userService;
         this.redisUtil = redisUtil;
+        this.notificationService = notificationService;
     }
 
     public Comment getById(Long id) {
@@ -63,15 +66,15 @@ public class CommentService {
     /**
      * Add a comment to a post. Update user's commentCount, post's activeAt.
      * Post's commentCount is not updated because there is no field for it yet. It's calculated in the DTO.
-     * TODO: notify the author of the post
      */
     public CommentDto addComment(CommentDto.CommentCreate commentCreate, User user) {
         Post post = postService.getById(commentCreate.postId);
         Comment comment = commentRepository.save(new Comment(commentCreate.body, post, user));
-        post.setActiveAt(comment.getCreatedAt());
+        postService.updateActiveAt(post, comment.getCreatedAt());
         user.incrementCommentCount();
         CommentDto commentDto = new CommentDto(comment);
         redisUtil.addComment(commentDto);
+        notificationService.addNotification(comment);
         return commentDto;
     }
 

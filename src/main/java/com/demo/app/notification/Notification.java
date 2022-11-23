@@ -1,5 +1,6 @@
 package com.demo.app.notification;
 
+import org.springframework.data.cassandra.core.mapping.Column;
 import org.springframework.data.cassandra.core.mapping.PrimaryKey;
 import org.springframework.data.cassandra.core.mapping.Table;
 
@@ -10,35 +11,36 @@ public class Notification {
 
     private String type;
     private String content;
-    private String createdAt;
-    private Long senderId;
-    private Long receiverId;
+    @Column("created_at")
+    private Long createdAt;
+    private String sender;
     @PrimaryKey
-    private UUID id;
+    private NotificationPrimaryKey key;
 
     public Notification() {
     }
 
-    public Notification(UUID id, String type, String content, String createdAt, Long senderId, Long receiverId) {
-        this.id = id;
+    public Notification(UUID id, String type, String content, Long createdAt, String sender, String receiver) {
+        this.key = new NotificationPrimaryKey(receiver, id);
         this.type = type;
         this.content = content;
         this.createdAt = createdAt;
-        this.senderId = senderId;
-        this.receiverId = receiverId;
+        this.sender = sender;
     }
 
     public String toString() {
-        return String.format("Notification[id=%s, type=%s, content=%s, createdAt=%s, senderId=%d, receiverId=%d]", id
-                , type, content, createdAt, senderId, receiverId);
+        UUID id = key.getId();
+        String receiver = key.getReceiver();
+        return String.format("Notification[id=%s, type=%s, content=%s, createdAt=%s, senderId=%s, receiverId=%s]", id
+                , type, content, createdAt, sender, receiver);
     }
 
     public UUID getId() {
-        return id;
+        return key.getId();
     }
 
     public void setId(UUID id) {
-        this.id = id;
+        key.setId(id);
     }
 
     public String getType() {
@@ -49,16 +51,15 @@ public class Notification {
         return content;
     }
 
-    public String getCreatedAt() {
+    public Long getCreatedAt() {
         return createdAt;
     }
 
-    public Long getSenderId() {
-        return senderId;
+    public String getSender() {
+        return sender;
     }
 
-    public Long getReceiverId() {
-        return receiverId;
+    public String getReceiver() {
+        return key.getReceiver();
     }
-
 }
